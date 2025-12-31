@@ -176,23 +176,23 @@ const Ranking: React.FC = () => {
   return (
     <div className="max-w-[1000px] mx-auto animate-in fade-in duration-700 space-y-8">
       
-      {/* Modal de Criação Refinado com Fix de Scroll */}
+      {/* Modal de Criação - Ajustado para Navbar top-28 */}
       {isCreateModalOpen && (
         <div 
-          className={`fixed inset-0 z-[1000] overflow-y-auto transition-all duration-300
-            ${isClosing ? 'bg-black/0 backdrop-blur-0' : 'bg-black/90 backdrop-blur-2xl'}`}
+          className={`fixed left-0 right-0 bottom-0 top-28 z-[1000] overflow-y-auto transition-all duration-300
+            ${isClosing ? 'bg-black/0 backdrop-blur-0' : 'bg-black/85 backdrop-blur-xl'}`}
         >
-          {/* Container que permite scroll se o modal for maior que a tela */}
-          <div className="min-h-full flex items-start justify-center p-4 py-12 md:p-10 md:py-24">
+          {/* Container que inicia abaixo da navbar e permite scroll interno */}
+          <div className="min-h-full flex items-start justify-center p-4 py-8 md:p-10 md:py-16">
             
-            {/* Overlay de clique para fechar */}
-            <div className="fixed inset-0" onClick={() => !isSubmitting && triggerClose()}></div>
+            {/* Overlay de clique para fechar (somente na área de fundo) */}
+            <div className="fixed inset-0 top-28" onClick={() => !isSubmitting && triggerClose()}></div>
             
             {/* Corpo do Modal */}
-            <div className={`relative w-full max-w-[480px] bg-[#080808] border border-white/10 rounded-[40px] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden transition-all duration-300
+            <div className={`relative w-full max-w-[480px] bg-[#0c0c0c] border border-white/10 rounded-[40px] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden transition-all duration-500
               ${isClosing 
-                ? 'opacity-0 scale-95 translate-y-8' 
-                : 'opacity-100 scale-100 translate-y-0 animate-in zoom-in-95 slide-in-from-top-12'
+                ? 'opacity-0 scale-95 translate-y-12' 
+                : 'opacity-100 scale-100 translate-y-0 animate-in zoom-in-95 slide-in-from-top-20'
               }`}
               style={{ transitionTimingFunction: isClosing ? 'ease-in' : 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
             >
@@ -200,13 +200,13 @@ const Ranking: React.FC = () => {
               
               <div className="p-10 md:p-14">
                 <div className="text-center mb-10 relative">
-                  <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-[0.3em] leading-none mb-4">CRIAR LIGA</h2>
-                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">SEASON 2026</p>
+                  <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-[0.35em] leading-none mb-4">CRIAR LIGA</h2>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.45em]">SEASON 2026</p>
                   
                   {!isSubmitting && (
                     <button 
                       onClick={triggerClose}
-                      className="absolute -top-6 -right-6 w-12 h-12 flex items-center justify-center text-gray-700 hover:text-[#c89b3c] transition-all duration-300"
+                      className="absolute -top-6 -right-6 w-12 h-12 flex items-center justify-center text-gray-700 hover:text-[#c89b3c] transition-all duration-500 hover:rotate-90"
                     >
                       <i className="fa-solid fa-xmark text-2xl"></i>
                     </button>
@@ -215,11 +215,11 @@ const Ranking: React.FC = () => {
 
                 <form onSubmit={handleCreateLeague} className="space-y-8">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">BRASÃO DA LIGA <span className="text-[#c89b3c] text-xs">*</span></label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">BRASÃO DA COMPETIÇÃO <span className="text-[#c89b3c]">*</span></label>
                     <div 
                       onClick={() => !isSubmitting && fileInputRef.current?.click()}
                       className={`relative w-full aspect-[21/9] rounded-3xl border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden group 
-                        ${leagueImage ? 'border-[#c89b3c]/50 bg-black shadow-[inset_0_0_30px_rgba(200,155,60,0.1)]' : 'border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-[#c89b3c]/40'}
+                        ${leagueImage ? 'border-[#c89b3c]/50 bg-black' : 'border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-[#c89b3c]/40'}
                         ${imageError && !leagueImage ? 'border-red-500/50 bg-red-500/[0.02]' : ''}`}
                     >
                       {leagueImage ? (
@@ -227,8 +227,8 @@ const Ranking: React.FC = () => {
                       ) : (
                         <div className="text-center p-6">
                           <i className={`fa-solid fa-shield-halved text-2xl mb-3 transition-transform group-hover:scale-110 duration-500 ${imageError ? 'text-red-500' : 'text-gray-700'}`}></i>
-                          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ARRASTE OU CLIQUE</p>
-                          <p className="text-[8px] font-bold text-gray-800 uppercase tracking-widest">TAMANHO MÁXIMO: 500KB</p>
+                          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">CLIQUE PARA ENVIAR</p>
+                          <p className="text-[8px] font-bold text-gray-800 uppercase tracking-widest">LIMITE: 500KB</p>
                         </div>
                       )}
                       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
@@ -236,19 +236,19 @@ const Ranking: React.FC = () => {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">NOME DA COMPETIÇÃO <span className="text-[#c89b3c]">*</span></label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">NOME DA LIGA <span className="text-[#c89b3c]">*</span></label>
                     <input 
                       type="text" 
-                      placeholder="EX: LIGA DOS DEUSES"
+                      placeholder="EX: ARENA KINGS 2026"
                       value={newLeagueName}
                       onChange={(e) => setNewLeagueName(e.target.value.toUpperCase())}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-7 text-xs text-white font-black tracking-[0.15em] focus:outline-none focus:border-[#c89b3c]/50 transition-all placeholder:text-gray-800"
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-7 text-xs text-white font-black tracking-[0.2em] focus:outline-none focus:border-[#c89b3c]/50 transition-all placeholder:text-gray-800"
                       required
                     />
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">SISTEMA DE JOGO</label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">SISTEMA DE PONTUAÇÃO</label>
                     <div className="grid grid-cols-1 gap-4">
                       <div 
                         onClick={() => !isSubmitting && setLeagueFormat('continuo')}
@@ -259,7 +259,7 @@ const Ranking: React.FC = () => {
                         </div>
                         <div>
                           <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${leagueFormat === 'continuo' ? 'text-[#c89b3c]' : 'text-gray-400'}`}>CONTÍNUO</p>
-                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Pontuação acumulativa durante toda a temporada oficial.</p>
+                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Acumule pontos durante toda a temporada global.</p>
                         </div>
                       </div>
                       
@@ -272,7 +272,7 @@ const Ranking: React.FC = () => {
                         </div>
                         <div>
                           <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${leagueFormat === 'limitado' ? 'text-[#c89b3c]' : 'text-gray-400'}`}>TIRO CURTO</p>
-                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Disputa por rodadas específicas ou eventos especiais.</p>
+                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Disputa rápida por rodadas ou eventos de final de semana.</p>
                         </div>
                       </div>
                     </div>
@@ -284,24 +284,24 @@ const Ranking: React.FC = () => {
                       disabled={isSubmitting}
                       className={`w-full py-6 rounded-2xl font-orbitron font-black text-[12px] tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl overflow-hidden relative group/btn ${
                         submitStatus === 'success' 
-                          ? 'bg-green-600 text-white' 
+                          ? 'bg-green-600 text-white shadow-green-500/20' 
                           : 'bg-[#c89b3c] text-black hover:brightness-110 active:scale-[0.98]'
                       }`}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-3">
-                        {submitStatus === 'loading' ? 'ENVIANDO...' : submitStatus === 'success' ? 'SOLICITAÇÃO ENVIADA' : 'ENVIAR'}
+                        {submitStatus === 'loading' ? 'SOLICITANDO...' : submitStatus === 'success' ? 'SOLICITAÇÃO ENVIADA' : 'ENVIAR'}
                       </span>
                       <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
                     </button>
                     
-                    <p className="text-[8px] font-bold text-gray-700 uppercase tracking-widest mt-5 text-center leading-loose max-w-[280px]">
-                      Seu pedido será enviado para análise da staff da Kings Lendas.
+                    <p className="text-[8px] font-bold text-gray-700 uppercase tracking-[0.2em] mt-6 text-center leading-loose max-w-[300px]">
+                      Seu pedido passará por análise da administração Kings Lendas.
                     </p>
 
                     <button 
                       type="button" 
                       onClick={triggerClose} 
-                      className="mt-16 text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] hover:text-white transition-all duration-300 active:scale-90"
+                      className="mt-16 mb-4 text-[11px] font-black text-gray-600 uppercase tracking-[0.4em] hover:text-white transition-all duration-300 hover:tracking-[0.5em] active:scale-90"
                     >
                       CANCELAR
                     </button>
