@@ -31,7 +31,6 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
 
   const hiredCount = Object.values(userTeam.players).filter(p => !!p).length;
 
-  // Sincronizado com SquadBuilder para consistência visual
   const rolePositions: Record<string, { top: string; left: string }> = {
     [Role.TOP]: { top: '15%', left: '15%' },
     [Role.JNG]: { top: '38%', left: '38%' },
@@ -43,11 +42,10 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in duration-700">
       
-      {/* SIDEBAR FINANCEIRA E TÁTICA */}
       <div className="lg:col-span-4 space-y-8">
         <div className="glass-card rounded-[40px] p-8 border border-white/5 sticky top-24">
           <div className="flex justify-between items-center mb-10">
-            <h2 className="text-[11px] font-black tracking-[0.4em] uppercase text-gray-500">RELATÓRIO DE MERCADO</h2>
+            <h2 className="text-[11px] font-black tracking-[0.1em] uppercase text-gray-500">RELATÓRIO DE MERCADO</h2>
             <div className="px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-[9px] font-black text-green-500 uppercase tracking-widest">Aberto</div>
           </div>
 
@@ -68,7 +66,6 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
             </div>
           </div>
 
-          {/* MINI MAPA TÁTICO HEXTECH */}
           <div className="relative aspect-square bg-[#050505] rounded-[32px] border border-white/10 overflow-hidden mb-12 shadow-2xl group">
              <img 
                 src="https://ddragon.leagueoflegends.com/cdn/13.24.1/img/map/map11.png" 
@@ -84,7 +81,6 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
              />
              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 pointer-events-none"></div>
              
-             {/* Scanlines e Grid Tech */}
              <div className="absolute inset-0 opacity-5 pointer-events-none" 
                   style={{ backgroundImage: 'linear-gradient(rgba(200, 155, 60, 0.2) 1px, transparent 1px)', backgroundSize: '100% 4px' }}></div>
 
@@ -122,9 +118,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
         </div>
       </div>
 
-      {/* LISTA DE CONTRATAÇÃO */}
       <div className="lg:col-span-8 space-y-8">
-        {/* BUSCA E FILTROS TECH */}
         <div className="flex flex-col gap-6">
            <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
@@ -162,7 +156,6 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
            </div>
         </div>
 
-        {/* LISTA DE JOGADORES */}
         <div className="grid grid-cols-1 gap-4">
            {filteredPlayers.map(player => {
               const isHired = userTeam.players[player.role]?.id === player.id;

@@ -41,7 +41,6 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Lado Esquerdo: Preview */}
         <div className="lg:col-span-5 space-y-6">
           <div className="glass-card rounded-[40px] p-8 border border-white/5 relative overflow-hidden group shadow-[0_0_50px_rgba(0,0,0,0.5)]">
             <div className="absolute inset-0 bg-gradient-to-b from-[#c89b3c]/5 to-transparent pointer-events-none"></div>
@@ -60,7 +59,7 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
               </div>
 
               <h2 className="text-2xl font-orbitron font-black text-white uppercase tracking-tight mb-1">{formData.name}</h2>
-              <p className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.4em] mb-8">{formData.userName}</p>
+              <p className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.12em] mb-8">{formData.userName}</p>
 
               <div className="grid grid-cols-2 gap-4 w-full">
                 <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4">
@@ -76,14 +75,12 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
           </div>
         </div>
 
-        {/* Lado Direito: Editor */}
         <div className="lg:col-span-7 space-y-8">
           <div className="glass-card rounded-[40px] p-10 border border-white/5 space-y-10">
             
-            {/* Campos de Texto */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">NOME DO TIME</label>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em]">NOME DO TIME</label>
                 <input 
                   type="text" 
                   value={formData.name}
@@ -93,7 +90,7 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">NOME DE INVOCADOR</label>
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em]">NOME DE INVOCADOR</label>
                 <input 
                   type="text" 
                   value={formData.userName}
@@ -103,9 +100,8 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
               </div>
             </div>
 
-            {/* Seleção de Avatar */}
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em]">ESCOLHER AVATAR</label>
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em]">ESCOLHER AVATAR</label>
               <div className="flex flex-wrap gap-4">
                 {avatars.map((url, idx) => (
                   <button 
@@ -122,7 +118,7 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate }) => {
             <button 
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full py-5 bg-[#c89b3c] text-black font-black text-[11px] rounded-2xl tracking-[0.3em] uppercase hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-[#c89b3c]/20 disabled:opacity-50"
+              className="w-full py-5 bg-[#c89b3c] text-black font-black text-[11px] rounded-2xl tracking-[0.1em] uppercase hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl shadow-[#c89b3c]/20 disabled:opacity-50"
             >
               {isSaving ? 'SALVANDO PROTOCOLO...' : 'CONFIRMAR ALTERAÇÕES'}
             </button>

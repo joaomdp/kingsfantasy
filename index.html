@@ -37,12 +37,6 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
         
-        .glass-card-hover:hover {
-            border: 1px solid rgba(200, 155, 60, 0.2);
-            background: rgba(15, 15, 15, 0.6);
-            transform: translateY(-2px);
-        }
-
         /* Scrollbar Stealth */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--bg-deep); }
@@ -52,14 +46,16 @@
         }
         ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
-        .hextech-border {
-            border: 1px solid;
-            border-image-source: linear-gradient(45deg, var(--gold), transparent, var(--hex-blue));
-            border-image-slice: 1;
+        /* Animação simplificada para não quebrar position: fixed */
+        @keyframes pageEnter {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        
+        .page-transition-container {
+            animation: pageEnter 0.4s ease-out forwards;
+        }
+
         @keyframes scanline {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100%); }
@@ -72,6 +68,31 @@
             animation: scanline 8s linear infinite;
             pointer-events: none;
         }
+
+        @keyframes shine {
+            100% { left: 125%; }
+        }
+        .hover-shine {
+            position: relative;
+        }
+        .hover-shine::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transform: skewX(-25deg);
+            transition: none;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .hover-shine:hover::after {
+            animation: shine 0.75s ease-in-out;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 <script type="importmap">
 {

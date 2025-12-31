@@ -34,7 +34,7 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
       Orçamento atual: C$ ${userTeam.budget}.
       Pergunta do usuário: "${query}"
       
-      Dê dicas táticas curtas, analise a escalação dele ou sugira nomes da liga "Kings Lendas" baseados em tendências do meta de 2025. Responda em português de forma entusiasta e gamer.`;
+      Dê dicas táticas curtas, analise a escalação dele ou sugira nomes da liga "Kings Lendas" baseados em tendências do meta de 2026. Responda em português de forma entusiasta e gamer.`;
 
       // Using gemini-3-flash-preview for general text tasks and accessing .text property directly
       const result = await ai.models.generateContent({

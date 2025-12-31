@@ -11,8 +11,6 @@ interface SquadBuilderProps {
 const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigateToMarket }) => {
   const roles = [Role.TOP, Role.JNG, Role.MID, Role.ADC, Role.SUP];
 
-  // Coordenadas otimizadas para o mapa do Summoner's Rift (0-100%)
-  // Espaçamento aumentado para representar as rotas reais
   const rolePositions: Record<string, { top: string; left: string }> = {
     [Role.TOP]: { top: '15%', left: '15%' },
     [Role.JNG]: { top: '38%', left: '38%' },
@@ -24,10 +22,9 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
   return (
     <div className="max-w-[1200px] mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
-      {/* HEADER TÁTICO */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div className="lg:col-span-5 space-y-6">
-          <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-[#c89b3c]/10 border border-[#c89b3c]/30 text-[10px] font-black text-[#c89b3c] tracking-[0.3em] uppercase">
+          <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-[#c89b3c]/10 border border-[#c89b3c]/30 text-[10px] font-black text-[#c89b3c] tracking-[0.08em] uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-[#c89b3c] animate-pulse"></span>
             Tactical Overview
           </div>
@@ -40,21 +37,19 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
           
           <div className="flex gap-12 pt-6">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-500 tracking-[0.4em] uppercase mb-1">PONTUAÇÃO</span>
+              <span className="text-[10px] font-black text-gray-500 tracking-[0.12em] uppercase mb-1">PONTUAÇÃO</span>
               <p className="text-4xl font-orbitron font-black text-white">{userTeam.totalPoints.toFixed(1)}</p>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-gray-500 tracking-[0.4em] uppercase mb-1">VALOR TOTAL</span>
+              <span className="text-[10px] font-black text-gray-500 tracking-[0.12em] uppercase mb-1">VALOR TOTAL</span>
               <p className="text-4xl font-orbitron font-black text-[#c89b3c]">C$ 76.5</p>
             </div>
           </div>
         </div>
 
-        {/* MAPA TÁTICO - REALISTICO HEXTECH */}
         <div className="lg:col-span-7 flex justify-center lg:justify-end">
           <div className="relative w-full max-w-[500px] aspect-square rounded-[40px] overflow-hidden border-2 border-white/5 bg-[#050505] shadow-[0_0_80px_rgba(200,155,60,0.15)] group">
             
-            {/* Imagem do Mapa com Opacidade e Filtros mais suaves para visibilidade total */}
             <img 
               src="https://ddragon.leagueoflegends.com/cdn/13.24.1/img/map/map11.png" 
               className="w-full h-full object-cover" 
@@ -68,14 +63,11 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
               }}
             />
             
-            {/* Camadas Visuais de profundidade */}
             <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-transparent to-black/20 pointer-events-none"></div>
             
-            {/* Grid Digital Sutil */}
             <div className="absolute inset-0 opacity-10 pointer-events-none" 
-                 style={{ backgroundImage: 'radial-gradient(rgba(200,155,60,0.3) 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+                 style={{ backgroundImage: 'radial-gradient(rgba(200, 155, 60, 0.3) 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
 
-            {/* JOGADORES NO MAPA */}
             {roles.map(role => {
               const p = userTeam.players[role];
               const pos = rolePositions[role];
@@ -95,7 +87,6 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
                         </div>
                       )}
                     </div>
-                    {/* Badge de Função com sigla correta */}
                     <div className="mt-3 bg-black/90 border border-white/10 px-3 py-1 rounded-full text-[8px] font-black text-gray-400 uppercase tracking-widest shadow-2xl backdrop-blur-md">
                       {role === Role.JNG ? 'JUN' : role.slice(0,3)}
                     </div>
@@ -107,10 +98,9 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         </div>
       </div>
 
-      {/* LISTA DE JOGADORES - ROSTER ATUAL */}
       <div className="space-y-6">
         <div className="flex items-center gap-6">
-          <h2 className="text-[11px] font-black text-gray-600 uppercase tracking-[0.5em] whitespace-nowrap">ROSTER ATUAL</h2>
+          <h2 className="text-[11px] font-black text-gray-600 uppercase tracking-[0.15em] whitespace-nowrap">ROSTER ATUAL</h2>
           <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
         </div>
         

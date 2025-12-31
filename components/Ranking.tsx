@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MOCK_RANKING } from '../constants';
 
 interface League {
   id: string;
   name: string;
-  members?: string;
+  members: string;
   icon: string;
   color: string;
   isVerified: boolean;
@@ -13,154 +13,366 @@ interface League {
 
 const Ranking: React.FC = () => {
   const [selectedLeague, setSelectedLeague] = useState<League | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [newLeagueName, setNewLeagueName] = useState('');
+  const [leagueFormat, setLeagueFormat] = useState<'continuo' | 'limitado'>('continuo');
+  const [leagueImage, setLeagueImage] = useState<string | null>(null);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Trava o scroll do body mas mantém a largura para evitar "pulo" da tela
+  useEffect(() => {
+    if (isCreateModalOpen) {
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+    } else {
+      document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
+    }
+    return () => { 
+      document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
+    };
+  }, [isCreateModalOpen]);
 
   const myLeagues: League[] = [
-    { id: 'l1', name: "Americas Global", icon: "fa-earth-americas", color: "bg-[#e5e5e5] text-black", isVerified: true },
-    { id: 'l2', name: "LTA Sul Pro", icon: "fa-trophy", color: "bg-[#ff4b50] text-white", isVerified: true },
-    { id: 'l3', name: "paiN Gaming Official", members: "51.225 membros", icon: "fa-shield", color: "bg-[#cc0000] text-white", isVerified: true },
-    { id: 'l4', name: "Ilha das Lendas", members: "16.596 membros", icon: "fa-island-tropical", color: "bg-[#7c3aed] text-white", isVerified: true },
-    { id: 'l5', name: "Brucesa Arena", members: "7.117 membros", icon: "fa-crown", color: "bg-[#3b82f6] text-white", isVerified: true },
+    { id: 'l1', name: "Américas Global", icon: "fa-earth-americas", color: "bg-blue-500/10 text-blue-400", isVerified: true, members: "128.4k" },
+    { id: 'l2', name: "Kings Cup Pro", icon: "fa-trophy", color: "bg-[#c89b3c]/10 text-[#c89b3c]", isVerified: true, members: "12.5k" },
+    { id: 'l3', name: "paiN Gaming Fan", icon: "fa-shield-halved", color: "bg-red-600/10 text-red-500", isVerified: true, members: "51.2k" },
+    { id: 'l4', name: "Ilha das Lendas", icon: "fa-shuttle-space", color: "bg-purple-600/10 text-purple-400", isVerified: true, members: "16.5k" },
+    { id: 'l5', name: "GoaTeam Arena", icon: "fa-crown", color: "bg-cyan-600/10 text-cyan-400", isVerified: false, members: "7.1k" },
   ];
+
+  const handleOpenModal = () => {
+    setIsCreateModalOpen(true);
+    setIsClosing(false);
+  };
+
+  const triggerClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsCreateModalOpen(false);
+      setIsClosing(false);
+      setNewLeagueName('');
+      setLeagueFormat('continuo');
+      setLeagueImage(null);
+      setError(null);
+      setImageError(false);
+      setSubmitStatus('idle');
+      setIsSubmitting(false);
+    }, 250);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 512000) {
+      setError('Imagem muito pesada! Max 500KB.');
+      setImageError(true);
+      return;
+    }
+    setError(null);
+    setImageError(false);
+    const reader = new FileReader();
+    reader.onloadend = () => setLeagueImage(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleCreateLeague = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newLeagueName.trim().length < 3) {
+      setError('Nome muito curto.');
+      return;
+    }
+    if (!leagueImage) {
+      setError('Brasão obrigatório.');
+      setImageError(true);
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitStatus('loading');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setSubmitStatus('success');
+    setTimeout(() => triggerClose(), 1000);
+  };
 
   if (selectedLeague) {
     return (
-      <div className="max-w-[1200px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="max-w-[1000px] mx-auto space-y-6 animate-in fade-in duration-500">
         <button 
           onClick={() => setSelectedLeague(null)}
-          className="flex items-center gap-3 text-gray-500 hover:text-[#c89b3c] transition-all font-black text-[11px] uppercase tracking-[0.3em] mb-4 group"
+          className="flex items-center gap-2.5 text-gray-600 hover:text-[#c89b3c] transition-all font-black text-[9px] uppercase tracking-[0.08em] group"
         >
-          <i className="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
-          Voltar para minhas ligas
+          <div className="w-7 h-7 rounded-full border border-white/5 flex items-center justify-center group-hover:bg-[#c89b3c]/5 group-hover:border-[#c89b3c]/30">
+            <i className="fa-solid fa-arrow-left text-[8px] transition-transform group-hover:-translate-x-0.5"></i>
+          </div>
+          VOLTAR
         </button>
 
-        <div className="flex items-center gap-6 mb-12">
-          <div className={`w-16 h-16 rounded-[20px] ${selectedLeague.color} flex items-center justify-center shadow-[0_0_30px_rgba(200,155,60,0.2)]`}>
-            <i className={`fa-solid ${selectedLeague.icon} text-2xl`}></i>
-          </div>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tight leading-none">{selectedLeague.name}</h1>
-              {selectedLeague.isVerified && <i className="fa-solid fa-circle-check text-[#c89b3c] text-xl"></i>}
+        <div className="glass-card rounded-[28px] p-6 flex flex-col md:flex-row items-center justify-between gap-5 border border-white/5 relative overflow-hidden">
+          <div className="flex items-center gap-5 relative z-20">
+            <div className={`w-14 h-14 rounded-xl ${selectedLeague.color} border border-white/5 flex items-center justify-center shadow-xl`}>
+              <i className={`fa-solid ${selectedLeague.icon} text-xl`}></i>
             </div>
-            <p className="text-sm text-gray-500 font-black uppercase tracking-[0.4em] mt-2">{selectedLeague.members || 'LIGA OFICIAL KINGS'}</p>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl md:text-2xl font-orbitron font-black text-white uppercase tracking-tight">{selectedLeague.name}</h1>
+                {selectedLeague.isVerified && (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#c89b3c]/10 border border-[#c89b3c]/20">
+                    <i className="fa-solid fa-circle-check text-[#c89b3c] text-[10px]"></i>
+                    <span className="text-[8px] font-black text-[#c89b3c] uppercase tracking-tighter">OFICIAL</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-1 text-gray-500 text-[10px] font-black uppercase tracking-[0.08em]">
+                 <i className="fa-solid fa-users text-[8px]"></i>
+                 {selectedLeague.members} MEMBROS
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2 relative z-20">
+            <button className="px-5 py-2.5 bg-[#c89b3c] text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-[#c89b3c]/10">
+              CONVIDAR
+            </button>
           </div>
         </div>
 
-        <div className="bg-[#0a0a0a] rounded-[32px] border border-white/5 overflow-hidden shadow-[0_32px_64px_rgba(0,0,0,0.5)]">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-white/[0.02] text-xs text-gray-500 uppercase tracking-[0.4em] border-b border-white/5">
-              <tr>
-                <th className="px-8 py-7 font-black text-center w-24">Pos</th>
-                <th className="px-8 py-7 font-black">Invocador / Time</th>
-                <th className="px-8 py-7 font-black text-right">Pontuação</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {MOCK_RANKING.map((entry) => (
-                <tr key={entry.rank} className="hover:bg-white/[0.02] transition-colors group cursor-default">
-                  <td className="px-8 py-6">
-                    <div className={`w-10 h-10 mx-auto rounded-xl flex items-center justify-center font-black font-orbitron text-base
-                      ${entry.rank === 1 ? 'bg-[#c89b3c] text-black shadow-[0_0_20px_rgba(200,155,60,0.4)]' : 'text-gray-400 group-hover:text-white transition-colors'}`}>
-                      {entry.rank}
-                    </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 rounded-xl bg-black border border-white/10 overflow-hidden relative">
-                        <img src={`https://picsum.photos/seed/${entry.userName}/60`} className="w-full h-full object-cover" alt="" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-orbitron font-black text-lg text-white group-hover:text-[#c89b3c] transition-colors uppercase tracking-tight">{entry.userName}</span>
-                        <span className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">{entry.teamName}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-6 text-right">
-                    <div className="flex flex-col items-end">
-                      <span className="text-2xl font-orbitron font-black text-white">{entry.points.toFixed(1)}</span>
-                      <span className="text-[10px] text-green-500 font-black uppercase tracking-widest mt-0.5">ESTÁVEL</span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-1.5">
+           {MOCK_RANKING.map((entry, idx) => {
+             const isTop3 = entry.rank <= 3;
+             const isUser = entry.userName === 'HAKKAI';
+             return (
+               <div key={entry.rank} className={`glass-card rounded-xl p-3 flex items-center gap-5 border transition-all hover:bg-white/[0.04] group hover-shine relative overflow-hidden ${isTop3 ? 'border-[#c89b3c]/10' : 'border-white/5'} ${isUser ? 'bg-[#c89b3c]/[0.03] border-[#c89b3c]/30' : ''}`} style={{ animationDelay: `${idx * 40}ms` }}>
+                 <div className="w-8 text-center relative z-20">
+                    <span className={`font-orbitron font-black text-sm ${isTop3 ? 'text-[#c89b3c]' : 'text-gray-700'}`}>
+                      {entry.rank.toString().padStart(2, '0')}
+                    </span>
+                 </div>
+                 <div className="relative w-10 h-10 shrink-0 z-20">
+                    <img src={`https://picsum.photos/seed/${entry.userName}/100`} className="w-full h-full object-cover rounded-lg border border-white/5 group-hover:border-[#c89b3c]/30 transition-colors" alt="" />
+                 </div>
+                 <div className="flex-1 relative z-20">
+                    <h4 className="font-orbitron font-black text-white text-sm tracking-tight uppercase group-hover:text-[#c89b3c] transition-colors leading-none">{entry.userName}</h4>
+                    <p className="text-[8px] font-bold text-gray-600 uppercase tracking-widest mt-1">{entry.teamName}</p>
+                 </div>
+                 <div className="text-right min-w-[80px] relative z-20">
+                    <span className="text-[8px] font-black text-gray-700 uppercase tracking-widest block">PONTOS</span>
+                    <span className="text-lg font-orbitron font-black text-white leading-none">{entry.points.toFixed(1)}</span>
+                 </div>
+               </div>
+             );
+           })}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1100px] mx-auto animate-in fade-in duration-700">
-      <div className="flex justify-between items-end mb-10">
-        <div>
-          <h2 className="text-[11px] font-black text-[#c89b3c] uppercase tracking-[0.5em] mb-2">LOBBY DE COMPETIÇÃO</h2>
-          <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">Minhas Ligas</h1>
+    <div className="max-w-[1000px] mx-auto animate-in fade-in duration-700 space-y-8">
+      
+      {/* Modal de Criação Refinado com Fix de Scroll */}
+      {isCreateModalOpen && (
+        <div 
+          className={`fixed inset-0 z-[1000] overflow-y-auto transition-all duration-300
+            ${isClosing ? 'bg-black/0 backdrop-blur-0' : 'bg-black/90 backdrop-blur-2xl'}`}
+        >
+          {/* Container que permite scroll se o modal for maior que a tela */}
+          <div className="min-h-full flex items-start justify-center p-4 py-12 md:p-10 md:py-24">
+            
+            {/* Overlay de clique para fechar */}
+            <div className="fixed inset-0" onClick={() => !isSubmitting && triggerClose()}></div>
+            
+            {/* Corpo do Modal */}
+            <div className={`relative w-full max-w-[480px] bg-[#080808] border border-white/10 rounded-[40px] shadow-[0_50px_150px_rgba(0,0,0,1)] overflow-hidden transition-all duration-300
+              ${isClosing 
+                ? 'opacity-0 scale-95 translate-y-8' 
+                : 'opacity-100 scale-100 translate-y-0 animate-in zoom-in-95 slide-in-from-top-12'
+              }`}
+              style={{ transitionTimingFunction: isClosing ? 'ease-in' : 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#c89b3c] to-transparent"></div>
+              
+              <div className="p-10 md:p-14">
+                <div className="text-center mb-10 relative">
+                  <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-[0.3em] leading-none mb-4">CRIAR LIGA</h2>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">SEASON 2026</p>
+                  
+                  {!isSubmitting && (
+                    <button 
+                      onClick={triggerClose}
+                      className="absolute -top-6 -right-6 w-12 h-12 flex items-center justify-center text-gray-700 hover:text-[#c89b3c] transition-all duration-300"
+                    >
+                      <i className="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                  )}
+                </div>
+
+                <form onSubmit={handleCreateLeague} className="space-y-8">
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">BRASÃO DA LIGA <span className="text-[#c89b3c] text-xs">*</span></label>
+                    <div 
+                      onClick={() => !isSubmitting && fileInputRef.current?.click()}
+                      className={`relative w-full aspect-[21/9] rounded-3xl border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden group 
+                        ${leagueImage ? 'border-[#c89b3c]/50 bg-black shadow-[inset_0_0_30px_rgba(200,155,60,0.1)]' : 'border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-[#c89b3c]/40'}
+                        ${imageError && !leagueImage ? 'border-red-500/50 bg-red-500/[0.02]' : ''}`}
+                    >
+                      {leagueImage ? (
+                        <img src={leagueImage} className="w-full h-full object-cover animate-in fade-in zoom-in-110 duration-700" alt="Preview" />
+                      ) : (
+                        <div className="text-center p-6">
+                          <i className={`fa-solid fa-shield-halved text-2xl mb-3 transition-transform group-hover:scale-110 duration-500 ${imageError ? 'text-red-500' : 'text-gray-700'}`}></i>
+                          <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">ARRASTE OU CLIQUE</p>
+                          <p className="text-[8px] font-bold text-gray-800 uppercase tracking-widest">TAMANHO MÁXIMO: 500KB</p>
+                        </div>
+                      )}
+                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">NOME DA COMPETIÇÃO <span className="text-[#c89b3c]">*</span></label>
+                    <input 
+                      type="text" 
+                      placeholder="EX: LIGA DOS DEUSES"
+                      value={newLeagueName}
+                      onChange={(e) => setNewLeagueName(e.target.value.toUpperCase())}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-5 px-7 text-xs text-white font-black tracking-[0.15em] focus:outline-none focus:border-[#c89b3c]/50 transition-all placeholder:text-gray-800"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest block">SISTEMA DE JOGO</label>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div 
+                        onClick={() => !isSubmitting && setLeagueFormat('continuo')}
+                        className={`cursor-pointer p-5 rounded-2xl border transition-all duration-500 flex items-start gap-4 ${leagueFormat === 'continuo' ? 'bg-[#c89b3c]/10 border-[#c89b3c]/40 shadow-[0_0_20px_rgba(200,155,60,0.05)]' : 'bg-white/[0.01] border-white/5 hover:border-white/10'}`}
+                      >
+                        <div className={`mt-1 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${leagueFormat === 'continuo' ? 'border-[#c89b3c]' : 'border-gray-800'}`}>
+                          {leagueFormat === 'continuo' && <div className="w-1.5 h-1.5 rounded-full bg-[#c89b3c]"></div>}
+                        </div>
+                        <div>
+                          <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${leagueFormat === 'continuo' ? 'text-[#c89b3c]' : 'text-gray-400'}`}>CONTÍNUO</p>
+                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Pontuação acumulativa durante toda a temporada oficial.</p>
+                        </div>
+                      </div>
+                      
+                      <div 
+                        onClick={() => !isSubmitting && setLeagueFormat('limitado')}
+                        className={`cursor-pointer p-5 rounded-2xl border transition-all duration-500 flex items-start gap-4 ${leagueFormat === 'limitado' ? 'bg-[#c89b3c]/10 border-[#c89b3c]/40 shadow-[0_0_20px_rgba(200,155,60,0.05)]' : 'bg-white/[0.01] border-white/5 hover:border-white/10'}`}
+                      >
+                        <div className={`mt-1 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${leagueFormat === 'limitado' ? 'border-[#c89b3c]' : 'border-gray-800'}`}>
+                          {leagueFormat === 'limitado' && <div className="w-1.5 h-1.5 rounded-full bg-[#c89b3c]"></div>}
+                        </div>
+                        <div>
+                          <p className={`text-[10px] font-black uppercase tracking-widest mb-1.5 ${leagueFormat === 'limitado' ? 'text-[#c89b3c]' : 'text-gray-400'}`}>TIRO CURTO</p>
+                          <p className="text-[9px] font-bold text-gray-600 uppercase leading-relaxed tracking-wider">Disputa por rodadas específicas ou eventos especiais.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-8 flex flex-col items-center">
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className={`w-full py-6 rounded-2xl font-orbitron font-black text-[12px] tracking-[0.4em] uppercase transition-all duration-500 shadow-2xl overflow-hidden relative group/btn ${
+                        submitStatus === 'success' 
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-[#c89b3c] text-black hover:brightness-110 active:scale-[0.98]'
+                      }`}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-3">
+                        {submitStatus === 'loading' ? 'ENVIANDO...' : submitStatus === 'success' ? 'SOLICITAÇÃO ENVIADA' : 'ENVIAR'}
+                      </span>
+                      <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
+                    </button>
+                    
+                    <p className="text-[8px] font-bold text-gray-700 uppercase tracking-widest mt-5 text-center leading-loose max-w-[280px]">
+                      Seu pedido será enviado para análise da staff da Kings Lendas.
+                    </p>
+
+                    <button 
+                      type="button" 
+                      onClick={triggerClose} 
+                      className="mt-16 text-[10px] font-black text-gray-600 uppercase tracking-[0.3em] hover:text-white transition-all duration-300 active:scale-90"
+                    >
+                      CANCELAR
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
-        <button className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-white uppercase tracking-widest hover:bg-[#c89b3c] hover:text-black transition-all">
-          <i className="fa-solid fa-plus"></i>
-          Criar Nova Liga
+      )}
+
+      {/* Header das Ligas */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="text-center sm:text-left">
+          <h2 className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.2em] mb-2 animate-in slide-in-from-left duration-700">MODO COMPETITIVO</h2>
+          <h1 className="text-4xl md:text-5xl font-orbitron font-black text-white uppercase tracking-tighter leading-none animate-in slide-in-from-left duration-700 delay-100">
+            MINHAS <span className="text-[#c89b3c]">LIGAS</span>
+          </h1>
+        </div>
+        
+        <button 
+          onClick={handleOpenModal}
+          className="group flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.12em] hover:bg-[#c89b3c] hover:text-black transition-all duration-500 shadow-2xl hover:shadow-[#c89b3c]/30 relative z-10 active:scale-90 active:bg-white/20 overflow-hidden outline-none"
+        >
+          <div className="absolute inset-0 bg-white opacity-0 group-active:opacity-10 transition-opacity duration-100 pointer-events-none"></div>
+          <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none"></div>
+          <i className="fa-solid fa-plus text-[11px] group-hover:rotate-180 transition-transform duration-700 ease-out"></i>
+          CRIAR LIGA
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-5">
-        {myLeagues.map((league) => (
+      <div className="grid grid-cols-1 gap-4">
+        {myLeagues.map((league, idx) => (
           <div 
-            key={league.id}
-            onClick={() => setSelectedLeague(league)}
-            className="group relative flex items-center justify-between p-8 bg-[#0a0a0a] rounded-[28px] border border-white/5 hover:border-[#c89b3c]/40 transition-all cursor-pointer shadow-[0_20px_40px_rgba(0,0,0,0.3)] overflow-hidden"
+            key={league.id} 
+            onClick={() => setSelectedLeague(league)} 
+            className="group glass-card hover-shine rounded-[28px] p-5 flex flex-col sm:flex-row items-center justify-between border border-white/5 hover:border-[#c89b3c]/50 hover:bg-white/[0.04] transition-all duration-500 cursor-pointer relative overflow-hidden animate-in slide-in-from-bottom-8"
+            style={{ animationDelay: `${idx * 60}ms`, animationFillMode: 'backwards' }}
           >
-            {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[100px] rounded-full -mr-32 -mt-32 pointer-events-none group-hover:bg-[#c89b3c]/10 transition-all"></div>
-            
-            <div className="flex items-center gap-8 relative z-10">
-              <div className={`w-16 h-16 rounded-2xl ${league.color} flex items-center justify-center shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-                <i className={`fa-solid ${league.icon} text-2xl`}></i>
+            <div className="flex items-center gap-6 relative z-20">
+              <div className={`w-14 h-14 rounded-2xl ${league.color} flex items-center justify-center shadow-2xl transition-all duration-700 border border-transparent group-hover:border-[#c89b3c]/30 group-hover:scale-110 group-hover:rotate-3`}>
+                <i className={`fa-solid ${league.icon} text-xl`}></i>
               </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-3">
-                  <span className="font-orbitron font-black text-2xl text-white group-hover:text-[#c89b3c] transition-colors uppercase tracking-tight leading-none">
-                    {league.name}
-                  </span>
-                  {league.isVerified && (
-                    <i className="fa-solid fa-circle-check text-[#c89b3c] text-sm"></i>
-                  )}
+              <div className="text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-3 mb-1">
+                  <h3 className="font-orbitron font-black text-xl text-white group-hover:text-[#c89b3c] transition-colors uppercase tracking-tight">{league.name}</h3>
+                  {league.isVerified && <i className="fa-solid fa-circle-check text-[#c89b3c] text-[12px] drop-shadow-[0_0_8px_rgba(200,155,60,0.6)]"></i>}
                 </div>
-                <div className="flex items-center gap-3 text-gray-500">
-                   <p className="text-[11px] font-black uppercase tracking-[0.2em] group-hover:text-gray-300 transition-colors">
-                      {league.members || 'LIGA OFICIAL KINGS'}
-                   </p>
-                   <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                   <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#c89b3c]">PLATINA I</p>
+                <div className="flex items-center justify-center sm:justify-start gap-2.5 text-[11px] font-bold uppercase text-gray-500 group-hover:text-gray-300 transition-colors tracking-widest">
+                  <i className="fa-solid fa-users text-[9px]"></i>
+                  {league.members} MEMBROS
                 </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-4 relative z-10">
-               <div className="hidden md:flex flex-col items-end mr-6">
-                  <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">PONTOS LÍDER</span>
-                  <span className="text-lg font-orbitron font-black text-white">1,250.5</span>
+            <div className="flex items-center gap-10 mt-5 sm:mt-0 relative z-20 sm:border-l border-white/10 sm:pl-10">
+               <div className="text-right hidden md:block opacity-30 group-hover:opacity-100 transition-all duration-500">
+                  <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest mb-1">PONTOS LÍDER</p>
+                  <p className="text-lg font-orbitron font-black text-white">1,250.5</p>
                </div>
-               <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-[#c89b3c] group-hover:text-black transition-all">
-                  <i className="fa-solid fa-chevron-right"></i>
+               <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:bg-white/10 group-hover:border-[#c89b3c]/60 group-hover:shadow-[0_0_20px_rgba(200,155,60,0.2)] relative z-20">
+                  <i className="fa-solid fa-arrow-right-long text-sm text-gray-500 group-hover:text-white transition-all group-hover:translate-x-1"></i>
                </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-16 p-12 border border-dashed border-white/10 rounded-[40px] text-center bg-white/[0.01] relative overflow-hidden group">
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(circle at center, rgba(200, 155, 60, 0.05) 0%, transparent 70%)' }}></div>
-        <div className="relative z-10">
-          <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-            <i className="fa-solid fa-magnifying-glass text-3xl text-gray-700"></i>
-          </div>
-          <h3 className="text-xl font-orbitron font-black text-white uppercase tracking-tight mb-3">Expandir Horizontes?</h3>
-          <p className="text-gray-500 text-sm font-medium mb-8 max-w-sm mx-auto">Encontre outras competições e comunidades para testar suas habilidades contra os melhores do servidor.</p>
-          <button className="px-8 py-4 bg-[#c89b3c]/10 text-[#c89b3c] border border-[#c89b3c]/30 rounded-2xl text-xs font-black uppercase tracking-[0.3em] hover:bg-[#c89b3c] hover:text-black transition-all">
-            Explorar Ligas Públicas
-          </button>
+      <div className="mt-8 glass-card rounded-[32px] p-8 text-center border-dashed border-white/10 group relative overflow-hidden hover-shine animate-in fade-in duration-1000">
+        <div className="relative z-20 max-w-md mx-auto flex flex-col items-center gap-4">
+          <p className="text-gray-600 text-[11px] font-black uppercase tracking-[0.1em] leading-tight">Quer competir em arenas globais?</p>
+          <button className="px-8 py-3 bg-[#c89b3c]/5 text-[#c89b3c] border border-[#c89b3c]/20 rounded-xl text-[9px] font-black uppercase tracking-[0.15em] hover:bg-[#c89b3c] hover:text-black transition-all active:scale-95 shadow-lg">EXPLORAR LIGAS PÚBLICAS</button>
         </div>
       </div>
     </div>

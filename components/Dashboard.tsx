@@ -11,7 +11,6 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
   const [pickedFilter, setPickedFilter] = useState<Role | 'TODOS'>('TODOS');
   
-  // URLs dos ícones oficiais do LoL (Community Dragon)
   const roleMetadata: Record<string, { label: string; icon: string }> = {
     TODOS: { 
       label: 'TODOS', 
@@ -87,16 +86,14 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
     { name: "Proving Grounds", icon: "fa-bolt", color: "text-purple-400" }
   ];
 
-  // Valor do Paitrimônio formatado (ex: 100000 -> 100.0)
   const paitrimonioValue = (userTeam.budget / 1000).toFixed(1);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
       
-      {/* MEU TIME (Lateral Esquerda) */}
       <div className="lg:col-span-3 space-y-8">
         <section>
-          <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.5em] mb-6">MEU TIME</h2>
+          <h2 className="text-[13px] font-black text-gray-500 uppercase tracking-tight mb-6">MEU TIME</h2>
           <div className="glass-card rounded-[32px] p-8 border border-white/5 relative overflow-hidden group">
             <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#c89b3c]/5 blur-[60px] rounded-full group-hover:bg-[#c89b3c]/10 transition-all"></div>
             
@@ -113,7 +110,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
 
               <div className="space-y-6">
                 <div>
-                  <div className="flex justify-between text-[10px] font-black text-gray-400 tracking-widest uppercase mb-3">
+                  <div className="flex justify-between text-[10px] font-black text-gray-400 tracking-wider uppercase mb-3">
                     <span>PAITRIMÔNIO</span>
                     <span className="text-[#c89b3c]">{paitrimonioValue}</span>
                   </div>
@@ -133,7 +130,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
 
               <button 
                 onClick={() => onNavigate('squad')}
-                className="w-full mt-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.3em] hover:bg-[#c89b3c] hover:text-black transition-all duration-500"
+                className="w-full mt-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.1em] hover:bg-[#c89b3c] hover:text-black transition-all duration-500"
               >
                 EDITAR LINE-UP
               </button>
@@ -143,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
 
         <section>
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.5em]">LIGAS</h2>
+            <h2 className="text-[13px] font-black text-gray-500 uppercase tracking-tight">LIGAS</h2>
             <button onClick={() => onNavigate('ranking')} className="text-[9px] font-black text-[#c89b3c] uppercase tracking-widest hover:underline transition-all">Ver Todas</button>
           </div>
           <div className="space-y-3">
@@ -166,10 +163,8 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
         </section>
       </div>
 
-      {/* FEED PRINCIPAL */}
       <div className="lg:col-span-9 space-y-12">
         
-        {/* BANNER HERO - KINGS LENDAS STAGE UPDATED */}
         <section className="relative h-[420px] rounded-[32px] overflow-hidden group cursor-pointer border border-[#c89b3c]/20 shadow-[0_0_60px_rgba(200,155,60,0.15)] bg-black">
           <img 
             src="https://mirs3-cdn-cf.behance.net/project_modules/max_1200/5e0e0a239268265.68f8e02b74844.png" 
@@ -185,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           
           <div className="absolute inset-0 p-12 flex flex-col justify-end">
             <div className="max-w-2xl space-y-5">
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-[#c89b3c] text-black text-[10px] font-black tracking-[0.4em] uppercase shadow-[0_0_30px_rgba(200,155,60,0.4)]">
+              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-[#c89b3c] text-black text-[10px] font-black tracking-[0.15em] uppercase shadow-[0_0_30px_rgba(200,155,60,0.4)]">
                 <i className="fa-solid fa-crown animate-bounce"></i>
                 KINGS LENDAS BROADCAST
               </div>
@@ -201,10 +196,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           <div className="absolute inset-0 opacity-20 pointer-events-none scanline"></div>
         </section>
 
-        {/* MEDIA HUB */}
         <section className="animate-in fade-in duration-1000">
           <div className="flex items-center gap-6 mb-8">
-            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.5em] whitespace-nowrap">MEDIA HUB</h2>
+            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] whitespace-nowrap">MEDIA HUB</h2>
             <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
           </div>
           
@@ -232,7 +226,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                      <img src="https://yt3.googleusercontent.com/0gsNYNH2bm_Xv8jhSkpr7yYJQqqeX5YDYmm3H3rFU7x4IKMB02vO7O2OPqa2297L9vbYxXyptw=s160-c-k-c0x00ffffff-no-rj" className="w-14 h-14 rounded-xl border-2 border-[#c89b3c] bg-[#050505] p-0.5 shadow-xl" alt="Cortes da Ilha" />
                    </div>
                    <div>
-                      <p className="text-[9px] font-black text-[#c89b3c] uppercase tracking-[0.4em] mb-1">CORTES DA ILHA</p>
+                      <p className="text-[9px] font-black text-[#c89b3c] uppercase tracking-[0.15em] mb-1">CORTES DA ILHA</p>
                       <h3 className="text-2xl md:text-3xl font-orbitron font-black text-white uppercase tracking-tight leading-none max-w-2xl">
                         O DIA QUE O ESA FEZ HISTÓRIA na KINGS LENDAS
                       </h3>
@@ -243,7 +237,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           </a>
         </section>
 
-        {/* JOGADORES MAIS ESCOLHIDOS */}
         <section className="animate-in fade-in duration-700">
           <div className="mb-4">
             <h2 className="text-lg font-bold text-white uppercase tracking-tight">
@@ -316,10 +309,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           </div>
         </section>
 
-        {/* ÚLTIMAS NOTÍCIAS */}
         <section className="animate-in fade-in duration-1000">
           <div className="flex items-center gap-6 mb-8">
-            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.5em] whitespace-nowrap">ÚLTIMAS NOTÍCIAS</h2>
+            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] whitespace-nowrap">ÚLTIMAS NOTÍCIAS</h2>
             <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
           </div>
 
