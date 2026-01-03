@@ -15,6 +15,13 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
   const [filterTeam, setFilterTeam] = useState<string | 'ALL'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const formatValue = (val: number) => {
+    return val.toLocaleString('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  };
+
   const uniqueTeams = useMemo(() => {
     const teams = players.map(p => p.team);
     return Array.from(new Set(teams)).sort();
@@ -42,12 +49,13 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
     );
   };
 
-  const rolePositions: Record<string, { top: string; left: string }> = {
-    [Role.TOP]: { top: '15%', left: '15%' },
-    [Role.JNG]: { top: '38%', left: '38%' },
-    [Role.MID]: { top: '51%', left: '51%' },
-    [Role.ADC]: { top: '85%', left: '82%' },
-    [Role.SUP]: { top: '75%', left: '92%' }
+  // Coordenadas idênticas às da página de Time (SquadBuilder)
+  const rolePositions: Record<string, { top: string; left: string; label: string }> = {
+    [Role.TOP]: { top: '22%', left: '18%', label: 'TOP' },
+    [Role.JNG]: { top: '38%', left: '35%', label: 'JUN' },
+    [Role.MID]: { top: '54%', left: '52%', label: 'MID' },
+    [Role.ADC]: { top: '86%', left: '78%', label: 'ADC' },
+    [Role.SUP]: { top: '76%', left: '90%', label: 'SUP' }
   };
 
   return (
@@ -64,31 +72,52 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
               <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">SALDO DISP.</p>
               <div className="flex items-center gap-2">
                 <PaiCoin size="md" />
-                <p className="text-2xl font-orbitron font-black text-[#c89b3c]">{(userTeam.budget / 1000).toFixed(1)}k</p>
+                <p className="text-2xl font-orbitron font-black text-[#c89b3c]">{formatValue(userTeam.budget)}</p>
               </div>
             </div>
             <div className="bg-white/[0.02] p-6 rounded-3xl border border-white/5">
               <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-2">INVESTIDO</p>
               <div className="flex items-center gap-2">
                 <PaiCoin size="md" variant="gray" />
-                <p className="text-2xl font-orbitron font-black text-white">{((INITIAL_BUDGET - userTeam.budget) / 1000).toFixed(1)}k</p>
+                <p className="text-2xl font-orbitron font-black text-white">{formatValue(INITIAL_BUDGET - userTeam.budget)}</p>
               </div>
             </div>
           </div>
 
-          <div className="relative aspect-square bg-[#050505] rounded-[32px] border border-white/10 overflow-hidden mb-12 shadow-2xl group">
-             <img src="https://ddragon.leagueoflegends.com/cdn/13.24.1/img/map/map11.png" className="w-full h-full object-cover opacity-80" style={{ filter: 'brightness(0.5) contrast(1.2)' }} alt="" />
-             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 pointer-events-none"></div>
+          {/* MAPA TÁTICO IDENTICO AO SQUADBUILDER */}
+          <div className="relative aspect-square bg-[#050505] rounded-[40px] border border-white/10 overflow-hidden mb-12 shadow-2xl group">
+             <img 
+               src="https://i.imgur.com/myc9dfj.png" 
+               className="w-full h-full object-cover opacity-70 contrast-[1.2] brightness-75 transition-transform duration-[10s] hover:scale-105" 
+               alt="Tactical Map" 
+             />
+             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none"></div>
+             
              {Object.entries(rolePositions).map(([role, pos]) => {
                 const p = userTeam.players[role as Role];
                 return (
                   <div key={role} className="absolute -translate-x-1/2 -translate-y-1/2 z-20" style={{ top: pos.top, left: pos.left }}>
-                    <div className={`w-10 h-10 rounded-full border-2 p-0.5 transition-all ${p ? 'border-[#c89b3c] bg-black scale-110 shadow-[0_0_15px_rgba(200,155,60,0.4)]' : 'border-white/10 bg-black/80'}`}>
-                      {p ? <img src={p.image} className="w-full h-full object-cover rounded-full" alt="" /> : <div className="w-full h-full flex items-center justify-center text-[7px] font-black text-white/20 uppercase">{role === Role.JNG ? 'JUN' : role.slice(0,3)}</div>}
+                    <div className="relative group/pin">
+                      <div className={`w-12 h-12 rounded-full border-2 p-0.5 transition-all duration-500 ${
+                        p ? 'border-[#c89b3c] bg-black scale-110 shadow-[0_0_20px_rgba(200,155,60,0.4)]' : 'border-white/10 bg-black/80'
+                      }`}>
+                        {p ? (
+                          <img src={p.image} className="w-full h-full object-cover rounded-full" alt="" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[7px] font-black text-white/20 uppercase">
+                            {pos.label}
+                          </div>
+                        )}
+                      </div>
+                      {p && <div className="absolute -inset-1 border border-[#c89b3c]/20 rounded-full animate-pulse"></div>}
                     </div>
                   </div>
                 );
              })}
+
+             <div className="absolute top-4 left-4 border-l border-[#c89b3c]/40 pl-3 py-1 opacity-40">
+                <p className="text-[6px] font-black text-white uppercase tracking-widest">MAPA TÁTICO V3.1</p>
+             </div>
           </div>
 
           <div className="space-y-4">
@@ -133,7 +162,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
                          </div>
                          <h3 className="text-2xl font-bold text-white tracking-tight uppercase group-hover:text-[#c89b3c] transition-colors leading-none">{player.name}</h3>
                          <div className="flex items-center gap-6 mt-4">
-                            <div className="flex flex-col"><span className="text-xs font-orbitron font-bold text-white leading-none">{player.points.toFixed(1)}</span><span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-1">Pontos</span></div>
+                            <div className="flex flex-col"><span className="text-xs font-orbitron font-bold text-white leading-none">{formatValue(player.points)}</span><span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-1">Pontos</span></div>
                             <div className="flex flex-col"><span className="text-xs font-orbitron font-bold text-white leading-none">{player.kda}</span><span className="text-[8px] font-black text-gray-600 uppercase tracking-widest mt-1">KDA</span></div>
                          </div>
                       </div>
@@ -142,7 +171,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire }) =>
                             <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">CUSTO</p>
                             <div className="flex items-center justify-end gap-2">
                                <PaiCoin size="md" />
-                               <span className="text-3xl font-orbitron font-black text-white leading-none">{(player.price / 1000).toFixed(1)}k</span>
+                               <span className="text-3xl font-orbitron font-black text-white leading-none">{formatValue(player.price)}</span>
                             </div>
                          </div>
                          <button onClick={() => isHired ? onFire(player.role) : onHire(player)} className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${isHired ? 'bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white' : 'bg-[#c89b3c]/5 text-[#c89b3c] hover:bg-[#c89b3c] hover:text-black border border-[#c89b3c]/20'}`}>

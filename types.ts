@@ -12,11 +12,16 @@ export interface Player {
   name: string;
   role: Role;
   team: string;
+  teamLogo: string;
   price: number;
   points: number;
   avgPoints: number;
   kda: string;
   image: string;
+  lastChampion?: {
+    name: string;
+    image: string;
+  };
 }
 
 export interface UserTeam {

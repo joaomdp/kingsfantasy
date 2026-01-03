@@ -31,7 +31,6 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
     { id: Role.SUP, label: 'SUP', top: '76%', left: '90%', labelPos: 'bottom-[-26px]' },
   ];
 
-  // Mock de histórico para o modal
   const mockHistory: MatchHistory[] = [
     { champion: 'Lee Sin', points: 18.5, result: 'win', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/LeeSin.png' },
     { champion: 'Jarvan IV', points: -2.1, result: 'loss', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/JarvanIV.png' },
@@ -292,7 +291,7 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         </div>
       </div>
 
-      {/* LINE-UP SECTION */}
+      {/* LINE-UP SECTION - REDESENHADA */}
       <div className="space-y-12 pt-10">
         <div className="flex items-center gap-10">
           <h2 className="text-[12px] font-black text-gray-700 uppercase tracking-[0.5em] whitespace-nowrap">LINE-UP</h2>
@@ -303,56 +302,89 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
           {roles.map((role) => {
             const p = userTeam.players[role.id];
             return (
-              <div key={role.id} className="glass-card rounded-[40px] p-8 border border-white/5 group flex flex-col items-center text-center hover:border-[#c89b3c]/40 hover:bg-[#c89b3c]/[0.01] transition-all duration-700 relative">
-                <div className="w-full flex justify-between items-start mb-8">
-                  <span className="text-[10px] font-black text-[#c89b3c] uppercase tracking-widest">{role.label === 'JUN' ? 'JUNGLE' : role.id}</span>
-                  {p && (
-                    <button 
-                      onClick={() => onFire(role.id)}
-                      className="w-8 h-8 rounded-lg bg-red-500/5 border border-red-500/10 flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/20 transition-all"
-                      title="Desvincular jogador"
-                    >
-                      <i className="fa-solid fa-trash-can text-[10px]"></i>
-                    </button>
-                  )}
-                </div>
+              <div key={role.id} className="group relative">
+                {/* BACKGROUND DECORATION */}
+                <div className="absolute -inset-1 bg-gradient-to-b from-[#c89b3c]/20 to-transparent rounded-[42px] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                
+                <div className="glass-card rounded-[40px] border border-white/5 flex flex-col overflow-hidden hover:border-[#c89b3c]/40 transition-all duration-700 relative bg-[#050505]">
+                  
+                  {/* HEADER DO CARD (Role) */}
+                  <div className="px-6 pt-6 flex justify-between items-center z-10">
+                    <span className="text-[9px] font-black text-[#c89b3c] uppercase tracking-[0.2em]">{role.label === 'JUN' ? 'JUNGLE' : role.id}</span>
+                    {p && (
+                      <button 
+                        onClick={() => onFire(role.id)}
+                        className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all scale-90 group-hover:scale-100"
+                      >
+                        <i className="fa-solid fa-trash-can text-[10px]"></i>
+                      </button>
+                    )}
+                  </div>
 
-                <div 
-                  className="w-full aspect-[4/5] rounded-[30px] overflow-hidden bg-black border border-white/5 mb-8 relative group-hover:border-[#c89b3c]/20 transition-all cursor-pointer" 
-                  onClick={() => !p && onNavigateToMarket()}
-                >
-                  {p ? (
-                    <>
-                      <img src={p.image} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 grayscale-[0.2] group-hover:grayscale-0" alt="" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/5">
-                      <i className="fa-solid fa-user-plus text-3xl group-hover:scale-110 transition-transform"></i>
+                  {/* PLAYER VISUAL AREA */}
+                  <div 
+                    className="relative w-full aspect-[1/1.2] cursor-pointer overflow-hidden group/avatar" 
+                    onClick={() => !p && onNavigateToMarket()}
+                  >
+                    {p ? (
+                      <>
+                        {/* Imagem do Jogador */}
+                        <img 
+                          src={p.image} 
+                          className="w-full h-full object-cover transition-all duration-[2s] group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0" 
+                          alt={p.name} 
+                        />
+                        {/* Gradiente de fundo */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-90"></div>
+                        
+                        {/* Logo do Time (Floating) */}
+                        <div className="absolute top-4 left-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-500">
+                           <div className="w-10 h-10 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 p-2 shadow-2xl overflow-hidden">
+                              <img src={p.teamLogo} className="w-full h-full object-contain" alt={p.team} />
+                           </div>
+                        </div>
+
+                        {/* Campeão Selecionado (Bottom Corner) */}
+                        {p.lastChampion && (
+                          <div className="absolute bottom-4 right-6 flex items-center gap-3 bg-black/60 backdrop-blur-md pl-1.5 pr-3 py-1.5 rounded-2xl border border-white/10 group-hover:border-[#c89b3c]/40 transition-all shadow-2xl">
+                            <div className="w-6 h-6 rounded-lg overflow-hidden border border-white/10">
+                               <img src={p.lastChampion.image} className="w-full h-full object-cover" alt={p.lastChampion.name} />
+                            </div>
+                            <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{p.lastChampion.name}</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 m-4 rounded-[30px] bg-white/[0.01] group-hover:border-[#c89b3c]/20 group-hover:bg-[#c89b3c]/5 transition-all">
+                        <i className="fa-solid fa-user-plus text-3xl text-white/5 group-hover:text-[#c89b3c]/40 group-hover:scale-110 transition-all"></i>
+                        <p className="text-[10px] font-black text-gray-800 uppercase tracking-widest group-hover:text-[#c89b3c]/60">CONTRATAR</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* INFO AREA */}
+                  <div className="p-6 pt-2 space-y-1 relative z-10 text-center">
+                    <h3 className={`font-orbitron font-black text-lg truncate uppercase tracking-tighter transition-colors ${p ? 'text-white group-hover:text-[#c89b3c]' : 'text-gray-800'}`}>
+                      {p ? p.name : 'SLOT VAZIO'}
+                    </h3>
+                    <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ${p ? 'text-gray-600' : 'text-gray-900'}`}>
+                      {p ? p.team : 'DISPONÍVEL'}
+                    </p>
+                    
+                    {/* BOTÃO DE HISTÓRICO */}
+                    <div className="pt-6">
+                      {p ? (
+                        <button 
+                          onClick={() => setHistoryPlayer(p)} 
+                          className="w-full py-3.5 bg-[#c89b3c] text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_10px_30px_rgba(200,155,60,0.15)] border border-[#c89b3c]/20"
+                        >
+                          Histórico
+                        </button>
+                      ) : (
+                        <div className="h-[44px]"></div>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                <div className="space-y-2 w-full px-2">
-                  <h3 className="font-bold text-white text-base truncate uppercase tracking-tighter group-hover:text-[#c89b3c] transition-colors">
-                    {p ? p.name : 'Slot Vazio'}
-                  </h3>
-                  <p className="text-[10px] text-gray-600 font-bold uppercase tracking-[0.15em]">
-                    {p ? p.team : 'Disponível'}
-                  </p>
-                </div>
-
-                <div className="pt-10 w-full min-h-[64px]">
-                  {p ? (
-                    <button 
-                      onClick={() => setHistoryPlayer(p)} 
-                      className="w-full py-4 bg-[#c89b3c] text-black rounded-2xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all border border-[#c89b3c]/20 shadow-[0_10px_30px_rgba(200,155,60,0.2)]"
-                    >
-                      Histórico
-                    </button>
-                  ) : (
-                    <div className="h-12 w-full"></div>
-                  )}
+                  </div>
                 </div>
               </div>
             );
