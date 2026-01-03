@@ -49,6 +49,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
     );
   };
 
+  const formatValue = (val: number) => {
+    if (Number.isInteger(val)) return val.toString();
+    return val.toFixed(1).replace(',', '.');
+  };
+
   const trending = [...MOCK_PLAYERS]
     .filter(p => pickedFilter === 'TODOS' || p.role === pickedFilter)
     .sort((a, b) => b.points - a.points)
@@ -56,9 +61,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
     .map((p, idx) => ({ ...p, choices: Math.floor(5000 - (idx * 380)) }));
 
   const newsItems = [
-    { id: 1, category: 'MERCADO', title: 'JANELA DE TRANSFERÊNCIAS: QUEM SOBE?', description: 'Analistas debutam nomes que prometem abalar a tabela.', image: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Kaisa_0.jpg', date: '12 MAR' },
-    { id: 2, category: 'COMPETITIVO', title: 'GUIA DE SCOUTING: COMO MONTAR SEU TIME', description: 'Confira as métricas essenciais de KDA e Farm.', image: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Aatrox_0.jpg', date: '10 MAR' },
-    { id: 3, category: 'PATCH', title: 'MUDANÇAS NO META: ASSASSINOS VOLTAM?', description: 'Como as mudanças impactam a pontuação.', image: 'https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Naafiri_0.jpg', date: '08 MAR' }
+    { id: 1, category: 'MERCADO', title: 'JANELA DE TRANSFERÊNCIAS: QUEM SOBE?', description: 'Analistas debutam nomes que prometem abalar a tabela.', image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop', date: '12 MAR' },
+    { id: 2, category: 'COMPETITIVO', title: 'GUIA DE SCOUTING: COMO MONTAR SEU TIME', description: 'Confira as métricas essenciais de KDA e Farm.', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop', date: '10 MAR' },
+    { id: 3, category: 'PATCH', title: 'MUDANÇAS NO META: ASSASSINOS VOLTAM?', description: 'Como as mudanças impactam a pontuação.', image: 'https://images.unsplash.com/photo-1605897472359-85e4b948215d?q=80&w=2070&auto=format&fit=crop', date: '08 MAR' }
   ];
 
   return (
@@ -84,11 +89,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                     <span>SALDO ATUAL</span>
                     <div className="flex items-center gap-2">
                        <PaiCoin size="sm" />
-                       <span className="text-[#c89b3c] font-orbitron font-black text-sm">{(userTeam.budget / 1000).toFixed(1)}k</span>
+                       <span className="text-[#c89b3c] font-orbitron font-black text-sm">{formatValue(userTeam.budget)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#c89b3c]" style={{ width: `${(userTeam.budget / 100000) * 100}%` }}></div>
+                    <div className="h-full bg-[#c89b3c]" style={{ width: `${(userTeam.budget / 100) * 100}%` }}></div>
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-4 border-y border-white/5">
@@ -119,12 +124,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
       </div>
 
       <div className="lg:col-span-9 space-y-12">
-        <section className="relative h-[420px] rounded-[40px] overflow-hidden group border border-[#c89b3c]/20 shadow-[0_0_60px_rgba(0,0,0,0.5)] bg-black">
-          <img src="https://images.contentstack.io/v3/assets/blt73110590efcfd130/blt3f38096a67f15309/638977a41e582810a9905959/SS23_Sizzle_Wallpaper.jpg" className="absolute inset-0 w-full h-full object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105" alt="Kings Lendas Banner" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        <section className="relative h-[420px] rounded-[40px] overflow-hidden group border border-[#c89b3c]/20 shadow-[0_0_60px_rgba(0,0,0,0.5)] bg-[#050505]">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-black"></div>
           <div className="absolute inset-0 p-12 flex flex-col justify-end">
             <h1 className="text-7xl font-orbitron font-black text-white uppercase tracking-tighter leading-none mb-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">O DESPERTAR DAS <span className="text-[#c89b3c]">LENDAS</span></h1>
-            <p className="text-gray-300 max-w-lg font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200">As luzes do palco se acenderam. Sua jornada para o topo da liga amadora começa agora.</p>
+            <p className="text-gray-400 max-w-lg font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200">A temporada competitiva começou. Domine o draft, escale seu time e conquiste o topo da Kings Lendas.</p>
           </div>
         </section>
 
@@ -145,9 +149,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                   <h3 className="text-3xl md:text-4xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">O DIA QUE O ESA FEZ HISTÓRIA na KINGS LENDAS | GENGG vs KCP</h3>
                 </div>
               </div>
-            </div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100 shadow-2xl">
-               <i className="fa-solid fa-play text-black text-2xl ml-1"></i>
             </div>
           </a>
         </section>
@@ -170,7 +171,9 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
               {trending.map((p, i) => (
                 <div key={p.id} className="flex items-center p-6 hover:bg-white/[0.01] transition-colors group cursor-pointer">
                   <div className="w-10 text-center text-white font-orbitron font-black text-lg mr-6 opacity-30 group-hover:opacity-100 transition-opacity">{i + 1}</div>
-                  <img src={p.image} className="w-14 h-14 object-cover rounded-xl border border-white/10 mr-6 group-hover:border-[#c89b3c]/50 transition-colors" alt="" />
+                  <div className="w-14 h-14 bg-black rounded-xl border border-white/10 mr-6 group-hover:border-[#c89b3c]/50 transition-colors overflow-hidden">
+                    <img src={p.image} className="w-full h-full object-contain" alt="" />
+                  </div>
                   <div className="flex-1">
                     <h4 className="font-orbitron font-black text-[#c89b3c] text-xl uppercase leading-none mb-1">{p.name}</h4>
                     <p className="text-gray-500 text-sm font-medium">{p.choices.toLocaleString()} convocações</p>
@@ -179,28 +182,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center gap-6 mb-8">
-            <h2 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">NOTÍCIAS TÁTICAS</h2>
-            <div className="h-px flex-1 bg-white/10"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {newsItems.map(item => (
-              <div key={item.id} className="glass-card rounded-[32px] overflow-hidden group border border-white/5 hover:border-[#c89b3c]/30 transition-all cursor-pointer">
-                <div className="relative aspect-video overflow-hidden">
-                  <img src={item.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-black/60 backdrop-blur-md rounded-lg text-[9px] font-black text-white">{item.date}</div>
-                </div>
-                <div className="p-8 space-y-4">
-                  <span className="text-[9px] font-black text-[#c89b3c] tracking-[0.2em] uppercase">{item.category}</span>
-                  <h3 className="font-orbitron font-black text-white text-lg leading-tight uppercase group-hover:text-[#c89b3c] transition-colors">{item.title}</h3>
-                  <p className="text-gray-400 text-[12px] font-medium leading-relaxed line-clamp-2">{item.description}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
       </div>

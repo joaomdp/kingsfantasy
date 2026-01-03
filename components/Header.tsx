@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Logo: React.FC = () => {
   const [hasError, setHasError] = useState(false);
-  const logoUrl = "https://i.imgur.com/ubXmpdn.png"; 
+  const logoUrl = "times/kingslendas.png"; 
 
   return (
     <div className="flex items-center gap-6 group">
@@ -20,7 +20,6 @@ const Logo: React.FC = () => {
         {!hasError ? (
           <div className="relative h-full flex items-center">
             <div className="absolute inset-0 bg-gold/10 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-            
             <img 
               src={logoUrl} 
               alt="Kings Lendas Logo" 

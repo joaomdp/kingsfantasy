@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { UserTeam, Role, Player } from '../types';
+import PlayerImage from './PlayerImage';
+import MatchHistoryModal from './MatchHistoryModal';
 
 interface SquadBuilderProps {
   userTeam: UserTeam;
@@ -8,97 +10,35 @@ interface SquadBuilderProps {
   onNavigateToMarket: () => void;
 }
 
-interface MatchHistory {
-  champion: string;
-  points: number;
-  icon: string;
-  result: 'win' | 'loss';
-}
-
 const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigateToMarket }) => {
-  const [selectedRound, setSelectedRound] = useState(10);
   const [historyPlayer, setHistoryPlayer] = useState<Player | null>(null);
   
-  const roundHistory = [
-    { round: 1, points: 135.43, fill: '85%' }, { round: 2, points: 95.71, fill: '60%' }, { round: 3, points: 108.84, fill: '70%' }, { round: 4, points: 91.55, fill: '58%' }, { round: 5, points: 119.42, fill: '75%' }, { round: 6, points: 94.97, fill: '60%' }, { round: 7, points: 56.59, fill: '40%' }, { round: 8, points: 77.84, fill: '50%' }, { round: 9, points: 31.98, fill: '25%' }, { round: 10, points: 85.28, fill: '55%' },
-  ];
-
   const roles = [
-    { id: Role.TOP, label: 'TOP', top: '22%', left: '18%', labelPos: 'bottom-[-26px]' },
-    { id: Role.JNG, label: 'JUN', top: '38%', left: '35%', labelPos: 'bottom-[-26px]' },
-    { id: Role.MID, label: 'MID', top: '54%', left: '52%', labelPos: 'bottom-[-26px]' },
-    { id: Role.ADC, label: 'ADC', top: '86%', left: '78%', labelPos: 'bottom-[-26px]' },
-    { id: Role.SUP, label: 'SUP', top: '76%', left: '90%', labelPos: 'bottom-[-26px]' },
-  ];
-
-  const mockHistory: MatchHistory[] = [
-    { champion: 'Lee Sin', points: 18.5, result: 'win', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/LeeSin.png' },
-    { champion: 'Jarvan IV', points: -2.1, result: 'loss', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/JarvanIV.png' },
-    { champion: 'Sejuani', points: 12.4, result: 'win', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/Sejuani.png' },
-    { champion: 'Vi', points: 25.8, result: 'win', icon: 'https://ddragon.leagueoflegends.com/cdn/13.24.1/img/champion/Vi.png' },
+    { id: Role.TOP, label: 'TOP', top: '22%', left: '18%', labelPos: 'bottom-[-34px]' },
+    { id: Role.JNG, label: 'JUN', top: '38%', left: '35%', labelPos: 'bottom-[-34px]' },
+    { id: Role.MID, label: 'MID', top: '54%', left: '52%', labelPos: 'bottom-[-34px]' },
+    { id: Role.ADC, label: 'ADC', top: '86%', left: '78%', labelPos: 'bottom-[-34px]' },
+    { id: Role.SUP, label: 'SUP', top: '76%', left: '90%', labelPos: 'bottom-[-34px]' },
   ];
 
   const formatValue = (val: number) => {
-    if (Number.isInteger(val)) {
-      return val.toLocaleString('pt-BR');
-    }
-    return val.toLocaleString('pt-BR', { 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 2 
-    });
+    if (Number.isInteger(val)) return val.toString();
+    return val.toFixed(1).replace(',', '.');
+  };
+
+  const roleIcons: Record<string, string> = {
+    [Role.TOP]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-top.png',
+    [Role.JNG]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-jungle.png',
+    [Role.MID]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-middle.png',
+    [Role.ADC]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-bottom.png',
+    [Role.SUP]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-utility.png',
   };
 
   return (
     <div className="max-w-[1240px] mx-auto space-y-16 animate-in fade-in duration-1000 pb-32">
-      {/* MODAL DE HISTÓRICO */}
+      {/* MODAL DE HISTÓRICO REUTILIZÁVEL */}
       {historyPlayer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setHistoryPlayer(null)}></div>
-          <div className="relative w-full max-w-lg bg-[#0a0a0a] rounded-[40px] border border-white/10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-500">
-            <div className="p-10 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-[#c89b3c]/10 to-transparent">
-              <div className="flex items-center gap-5">
-                <img src={historyPlayer.image} className="w-16 h-16 rounded-2xl border border-[#c89b3c]/30 object-cover" alt="" />
-                <div>
-                  <h3 className="font-orbitron font-black text-xl text-white uppercase tracking-tighter leading-none mb-1">{historyPlayer.name}</h3>
-                  <p className="text-[10px] font-black text-[#c89b3c] uppercase tracking-widest">{historyPlayer.team}</p>
-                </div>
-              </div>
-              <button onClick={() => setHistoryPlayer(null)} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 transition-colors">
-                <i className="fa-solid fa-xmark text-gray-500"></i>
-              </button>
-            </div>
-            
-            <div className="p-10 space-y-6">
-              <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">ÚLTIMAS PARTIDAS</h4>
-              <div className="space-y-3">
-                {mockHistory.map((match, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 group hover:bg-white/[0.04] transition-all">
-                    <div className="flex items-center gap-4">
-                      <img src={match.icon} className="w-10 h-10 rounded-lg border border-white/10" alt="" />
-                      <div>
-                        <p className="text-[12px] font-black text-white uppercase tracking-tight">{match.champion}</p>
-                        <span className={`text-[8px] font-black uppercase tracking-widest ${match.result === 'win' ? 'text-green-500' : 'text-red-500'}`}>
-                          {match.result === 'win' ? 'VITÓRIA' : 'DERROTA'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-orbitron font-black text-lg ${match.points >= 0 ? 'text-white' : 'text-red-500'}`}>
-                        {match.points > 0 ? '+' : ''}{formatValue(match.points)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button 
-                onClick={() => setHistoryPlayer(null)}
-                className="w-full mt-4 py-4 bg-white/5 text-gray-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all"
-              >
-                Fechar Detalhes
-              </button>
-            </div>
-          </div>
-        </div>
+        <MatchHistoryModal player={historyPlayer} onClose={() => setHistoryPlayer(null)} />
       )}
 
       {/* SEÇÃO HERO */}
@@ -130,7 +70,7 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
               <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-gray-500 transition-colors">PAITRIMÔNIO</span>
               <div className="flex items-center gap-5 mt-2">
                 <img src="https://i.imgur.com/4odZyzF.png" className="w-10 h-10 object-contain" alt="" />
-                <p className="text-6xl font-orbitron font-black text-white tracking-tighter group-hover:text-[#c89b3c] transition-colors">{formatValue(userTeam.budget / 1000)}k</p>
+                <p className="text-6xl font-orbitron font-black text-white tracking-tighter group-hover:text-[#c89b3c] transition-colors">{formatValue(userTeam.budget)}</p>
               </div>
             </div>
           </div>
@@ -153,16 +93,25 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
               const p = userTeam.players[role.id];
               return (
                 <div key={role.id} className="absolute -translate-x-1/2 -translate-y-1/2 z-20" style={{ top: role.top, left: role.left }}>
-                  <div className="relative group cursor-pointer" onClick={() => !p && onNavigateToMarket()}>
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-700 relative border-2 ${
-                      p ? 'border-[#c89b3c] bg-black scale-110 shadow-[0_0_30px_rgba(200,155,60,0.4)]' : 'border-white/10 bg-black/80 hover:border-white/30'
+                  <div className="relative group cursor-pointer" onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}>
+                    <div className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-700 relative border-2 ${
+                      p ? 'border-[#c89b3c] bg-black scale-110 shadow-[0_0_40px_rgba(200,155,60,0.5)]' : 'border-white/10 bg-black/80 hover:border-white/30'
                     }`}>
                       {p ? (
-                        <img src={p.image} className="w-full h-full object-cover rounded-full p-1" alt="" />
+                        <div className="w-full h-full rounded-full overflow-hidden p-1">
+                          <PlayerImage player={p} className="w-full h-full rounded-full" />
+                        </div>
                       ) : (
                         <i className="fa-solid fa-plus text-white/20 text-sm group-hover:text-white/60 transition-colors"></i>
                       )}
-                      {p && <div className="absolute -inset-2 border border-[#c89b3c]/20 rounded-full animate-[spin_8s_linear_infinite]"></div>}
+                      
+                      {p?.selectedChampion && (
+                        <div className="absolute bottom-[-10%] right-[-10%] w-10 h-10 rounded-full border-2 border-black bg-black p-0.5 z-40 shadow-2xl scale-110">
+                          <img src={p.selectedChampion.image} className="w-full h-full rounded-full object-cover" alt="" />
+                        </div>
+                      )}
+                      
+                      {p && <div className="absolute -inset-2 border border-[#c89b3c]/20 rounded-full animate-[spin_8s_linear_infinite] pointer-events-none"></div>}
                     </div>
                     <div className={`absolute ${role.labelPos} left-1/2 -translate-x-1/2 bg-black/90 px-3 py-1 rounded-sm border border-white/10 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-md opacity-80 group-hover:opacity-100 transition-opacity`}>
                       {role.label}
@@ -175,123 +124,7 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         </div>
       </div>
 
-      {/* GRÁFICO DE HISTÓRICO */}
-      <div className="bg-[#050505] rounded-[40px] border border-white/5 overflow-hidden shadow-2xl group/chart">
-        <div className="p-10 border-b border-white/5 flex flex-wrap items-center justify-between gap-10">
-          <div className="space-y-2">
-            <h2 className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">LOG DE PERFORMANCE</h2>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center bg-white/5 rounded-2xl p-1.5 border border-white/5">
-                <button onClick={() => setSelectedRound(Math.max(1, selectedRound - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-[#c89b3c] hover:text-black text-gray-500 rounded-xl transition-all duration-300">
-                  <i className="fa-solid fa-chevron-left text-xs"></i>
-                </button>
-                <span className="font-orbitron font-black text-white text-base px-8 uppercase tracking-widest">
-                  RODADA {selectedRound.toString().padStart(2, '0')}
-                </span>
-                <button onClick={() => setSelectedRound(Math.min(10, selectedRound + 1))} className="w-10 h-10 flex items-center justify-center hover:bg-[#c89b3c] hover:text-black text-gray-500 rounded-xl transition-all duration-300">
-                  <i className="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-16">
-            <div className="text-right">
-              <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">PONTUAÇÃO RECORD</p>
-              <div className="flex items-center justify-end gap-3">
-                <div className="w-1 h-1 rounded-full bg-[#c89b3c]"></div>
-                <p className="font-orbitron font-black text-[#c89b3c] text-2xl tracking-tighter">{formatValue(135.43)}</p>
-              </div>
-            </div>
-            <div className="w-px h-12 bg-white/5"></div>
-            <div className="text-right">
-              <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">MÉDIA TEMPORADA</p>
-              <p className="font-orbitron font-black text-white/20 text-2xl tracking-tighter">{formatValue(92.10)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-12 pb-16 flex items-end justify-between gap-3 overflow-x-auto no-scrollbar">
-          {roundHistory.map((rh) => {
-            const isSelected = selectedRound === rh.round;
-            return (
-              <div 
-                key={rh.round} 
-                onClick={() => setSelectedRound(rh.round)}
-                className="flex-1 min-w-[90px] flex flex-col items-center group cursor-pointer transition-all duration-500 relative"
-              >
-                <div className={`mb-4 transition-all duration-500 ${isSelected ? 'scale-110 translate-y-0' : 'scale-90 opacity-40 translate-y-1'}`}>
-                  <span className={`text-[10px] font-orbitron font-black ${isSelected ? 'text-[#c89b3c]' : 'text-gray-400'}`}>
-                    {formatValue(rh.points)}
-                  </span>
-                </div>
-                <div className={`w-12 h-48 rounded-t-2xl transition-all duration-700 relative overflow-hidden border ${
-                  isSelected 
-                    ? 'bg-[#c89b3c]/5 border-[#c89b3c]/60 shadow-[0_0_15px_rgba(200,155,60,0.08)]' 
-                    : 'bg-white/[0.01] border-white/5 hover:border-white/20'
-                }`}>
-                  <div 
-                    className={`absolute bottom-0 left-0 right-0 transition-all duration-1000 cubic-bezier(0.23, 1, 0.32, 1) ${
-                      isSelected ? 'bg-gradient-to-t from-[#c89b3c] to-[#f0e6d2] opacity-100' : 'bg-gray-800 opacity-20 group-hover:opacity-40'
-                    }`} 
-                    style={{ height: rh.fill }}
-                  >
-                    {isSelected && <div className="absolute top-0 left-0 right-0 h-[1px] bg-white opacity-40"></div>}
-                  </div>
-                </div>
-                <div className="mt-6 flex flex-col items-center gap-2">
-                  <span className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${isSelected ? 'text-[#c89b3c]' : 'text-gray-700'}`}>
-                    RD {rh.round.toString().padStart(2, '0')}
-                  </span>
-                  {isSelected && <div className="w-1 h-1 bg-[#c89b3c] rounded-full scale-100 transition-transform"></div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* MÓDULOS DE DADOS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="glass-card rounded-[40px] p-12 border border-white/5 flex flex-col items-center justify-center text-center space-y-4 group hover:border-[#c89b3c]/20 transition-all relative overflow-hidden">
-          <img 
-            src="https://i.imgur.com/4odZyzF.png" 
-            className="absolute -right-8 -bottom-8 w-44 h-44 object-contain opacity-[0.03] grayscale brightness-200 -rotate-12 transition-all duration-700 group-hover:scale-110 group-hover:rotate-0 group-hover:opacity-[0.06]" 
-            alt="" 
-          />
-          <div className="relative z-10 space-y-2">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">PAITRIMÔNIO</span>
-            <p className="font-orbitron font-black text-5xl text-white tracking-tighter group-hover:text-[#c89b3c] transition-colors">
-              {formatValue(userTeam.budget / 1000)}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-[#0c0c0c] rounded-[40px] p-12 border border-[#c89b3c]/30 flex flex-col items-center justify-center text-center space-y-4 shadow-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-[#c89b3c]/50"></div>
-          <span className="text-[11px] font-black text-[#c89b3c] uppercase tracking-[0.4em]">ÚLTIMA PERFORMANCE</span>
-          <p className="font-orbitron font-black text-7xl text-white tracking-tighter group-hover:scale-105 transition-transform duration-500">
-            {formatValue(85.28)}
-          </p>
-          <div className="px-5 py-2 bg-green-500/10 rounded-full border border-green-500/10">
-            <span className="text-[9px] font-black text-green-500 uppercase tracking-[0.2em]">+13% vs GLOBAL</span>
-          </div>
-        </div>
-
-        <div className="glass-card rounded-[40px] p-12 border border-white/5 flex flex-col items-center justify-center text-center space-y-4 group hover:border-white/20 transition-all relative overflow-hidden">
-          <div className="absolute -right-6 -bottom-6 opacity-[0.03] -rotate-12 transition-all duration-700 group-hover:scale-110 group-hover:rotate-0 group-hover:opacity-[0.06]">
-            <i className="fa-solid fa-trophy text-[10rem] text-white"></i>
-          </div>
-          <div className="relative z-10 space-y-2">
-            <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">SCORE ACUMULADO</span>
-            <p className="font-orbitron font-black text-5xl text-white tracking-tighter group-hover:scale-105 transition-transform">
-              {formatValue(userTeam.totalPoints)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* LINE-UP SECTION - REDESENHADA */}
+      {/* LINE-UP SECTION */}
       <div className="space-y-12 pt-10">
         <div className="flex items-center gap-10">
           <h2 className="text-[12px] font-black text-gray-700 uppercase tracking-[0.5em] whitespace-nowrap">LINE-UP</h2>
@@ -301,19 +134,19 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {roles.map((role) => {
             const p = userTeam.players[role.id];
+            const displayChampion = p?.selectedChampion || p?.lastChampion;
+            
             return (
               <div key={role.id} className="group relative">
-                {/* BACKGROUND DECORATION */}
                 <div className="absolute -inset-1 bg-gradient-to-b from-[#c89b3c]/20 to-transparent rounded-[42px] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                 
                 <div className="glass-card rounded-[40px] border border-white/5 flex flex-col overflow-hidden hover:border-[#c89b3c]/40 transition-all duration-700 relative bg-[#050505]">
                   
-                  {/* HEADER DO CARD (Role) */}
                   <div className="px-6 pt-6 flex justify-between items-center z-10">
                     <span className="text-[9px] font-black text-[#c89b3c] uppercase tracking-[0.2em]">{role.label === 'JUN' ? 'JUNGLE' : role.id}</span>
                     {p && (
                       <button 
-                        onClick={() => onFire(role.id)}
+                        onClick={(e) => { e.stopPropagation(); onFire(role.id); }}
                         className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all scale-90 group-hover:scale-100"
                       >
                         <i className="fa-solid fa-trash-can text-[10px]"></i>
@@ -321,68 +154,62 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
                     )}
                   </div>
 
-                  {/* PLAYER VISUAL AREA */}
                   <div 
-                    className="relative w-full aspect-[1/1.2] cursor-pointer overflow-hidden group/avatar" 
-                    onClick={() => !p && onNavigateToMarket()}
+                    className="relative w-full aspect-[1/1.2] cursor-pointer group/avatar" 
+                    onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}
                   >
                     {p ? (
                       <>
-                        {/* Imagem do Jogador */}
-                        <img 
-                          src={p.image} 
-                          className="w-full h-full object-cover transition-all duration-[2s] group-hover:scale-110 grayscale-[0.3] group-hover:grayscale-0" 
-                          alt={p.name} 
-                        />
-                        {/* Gradiente de fundo */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-90"></div>
+                        <PlayerImage player={p} className="w-full h-full transition-all duration-[2s] grayscale-[0.2] group-hover:grayscale-0" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-80"></div>
                         
-                        {/* Logo do Time (Floating) */}
-                        <div className="absolute top-4 left-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-500">
+                        <div className="absolute top-4 left-6 transition-transform duration-500">
                            <div className="w-10 h-10 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 p-2 shadow-2xl overflow-hidden">
                               <img src={p.teamLogo} className="w-full h-full object-contain" alt={p.team} />
                            </div>
                         </div>
 
-                        {/* Campeão Selecionado (Bottom Corner) */}
-                        {p.lastChampion && (
-                          <div className="absolute bottom-4 right-6 flex items-center gap-3 bg-black/60 backdrop-blur-md pl-1.5 pr-3 py-1.5 rounded-2xl border border-white/10 group-hover:border-[#c89b3c]/40 transition-all shadow-2xl">
-                            <div className="w-6 h-6 rounded-lg overflow-hidden border border-white/10">
-                               <img src={p.lastChampion.image} className="w-full h-full object-cover" alt={p.lastChampion.name} />
+                        {/* BADGE DO CAMPEÃO */}
+                        {displayChampion && (
+                          <div className="absolute bottom-2 right-2 z-40 transform translate-x-1 translate-y-1">
+                            <div className="relative w-16 h-16 rounded-full p-1 bg-black border border-white/10 shadow-[0_12px_30px_rgba(0,0,0,0.9)] overflow-hidden group-hover:scale-110 transition-transform duration-500">
+                               <div className="absolute inset-0 bg-gradient-to-tr from-[#c89b3c]/30 to-transparent pointer-events-none"></div>
+                               <img 
+                                 src={displayChampion.image} 
+                                 className="w-full h-full object-cover rounded-full border border-black" 
+                                 alt={displayChampion.name} 
+                                 title={displayChampion.name}
+                               />
                             </div>
-                            <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{p.lastChampion.name}</span>
                           </div>
                         )}
                       </>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 m-4 rounded-[30px] bg-white/[0.01] group-hover:border-[#c89b3c]/20 group-hover:bg-[#c89b3c]/5 transition-all">
-                        <i className="fa-solid fa-user-plus text-3xl text-white/5 group-hover:text-[#c89b3c]/40 group-hover:scale-110 transition-all"></i>
+                        <i className="fa-solid fa-user-plus text-3xl text-white/5 group-hover:text-[#c89b3c]/40 transition-all"></i>
                         <p className="text-[10px] font-black text-gray-800 uppercase tracking-widest group-hover:text-[#c89b3c]/60">CONTRATAR</p>
                       </div>
                     )}
                   </div>
 
-                  {/* INFO AREA */}
-                  <div className="p-6 pt-2 space-y-1 relative z-10 text-center">
-                    <h3 className={`font-orbitron font-black text-lg truncate uppercase tracking-tighter transition-colors ${p ? 'text-white group-hover:text-[#c89b3c]' : 'text-gray-800'}`}>
-                      {p ? p.name : 'SLOT VAZIO'}
-                    </h3>
-                    <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ${p ? 'text-gray-600' : 'text-gray-900'}`}>
-                      {p ? p.team : 'DISPONÍVEL'}
-                    </p>
+                  <div className="p-6 pt-4 space-y-2 relative z-10 cursor-pointer" onClick={() => p && setHistoryPlayer(p)}>
+                    <div className="flex items-center gap-3">
+                       <img src={roleIcons[role.id]} className="w-4 h-4 brightness-200 opacity-60" alt="" />
+                       <h3 className={`font-orbitron font-black text-lg truncate uppercase tracking-tighter transition-colors ${p ? 'text-white group-hover:text-[#c89b3c]' : 'text-gray-800'}`}>
+                         {p ? p.name : 'SLOT VAZIO'}
+                       </h3>
+                    </div>
                     
-                    {/* BOTÃO DE HISTÓRICO */}
-                    <div className="pt-6">
-                      {p ? (
-                        <button 
-                          onClick={() => setHistoryPlayer(p)} 
-                          className="w-full py-3.5 bg-[#c89b3c] text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 active:scale-95 transition-all shadow-[0_10px_30px_rgba(200,155,60,0.15)] border border-[#c89b3c]/20"
-                        >
-                          Histórico
-                        </button>
-                      ) : (
-                        <div className="h-[44px]"></div>
-                      )}
+                    <div className="flex items-center justify-between">
+                       <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ${p ? 'text-gray-600' : 'text-gray-900'}`}>
+                         {p ? p.team : 'DISPONÍVEL'}
+                       </p>
+                       {p && (
+                         <span className="text-[9px] font-black text-[#c89b3c] hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2">
+                           <i className="fa-solid fa-chart-simple"></i>
+                           Dados
+                         </span>
+                       )}
                     </div>
                   </div>
                 </div>

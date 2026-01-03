@@ -7,6 +7,11 @@ export enum Role {
   SUP = 'SUPPORT'
 }
 
+export interface Champion {
+  name: string;
+  image: string;
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -18,10 +23,8 @@ export interface Player {
   avgPoints: number;
   kda: string;
   image: string;
-  lastChampion?: {
-    name: string;
-    image: string;
-  };
+  lastChampion?: Champion;
+  selectedChampion?: Champion;
 }
 
 export interface UserTeam {

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Page, UserTeam, Player, Role } from './types';
+import { Page, UserTeam, Player, Role, Champion } from './types';
 import { INITIAL_BUDGET, MOCK_PLAYERS } from './constants';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
@@ -9,6 +9,7 @@ import SquadBuilder from './components/SquadBuilder';
 import Ranking from './components/Ranking';
 import AICoach from './components/AICoach';
 import Profile from './components/Profile';
+import ChampionSelector from './components/ChampionSelector';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
@@ -24,27 +25,49 @@ const App: React.FC = () => {
     totalPoints: 897.58,
   });
 
-  // Resetar scroll ao mudar de página - Forçado para o topo
+  const [pendingPlayer, setPendingPlayer] = useState<Player | null>(null);
+
+  // Pre-load de imagens para performance
+  useEffect(() => {
+    MOCK_PLAYERS.forEach(player => {
+      const img = new Image();
+      img.src = player.image;
+    });
+  }, []);
+
+  // Resetar scroll ao mudar de página
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPage]);
 
-  const handleHirePlayer = (player: Player) => {
+  const handleOpenChampionSelector = (player: Player) => {
     if (userTeam.budget < player.price) {
       alert('Orçamento insuficiente!');
       return;
     }
-    const currentPlayerInRole = userTeam.players[player.role];
+    setPendingPlayer(player);
+  };
+
+  const handleHirePlayer = (champion: Champion) => {
+    if (!pendingPlayer) return;
+
+    const playerToHire = { ...pendingPlayer, selectedChampion: champion };
+    const currentPlayerInRole = userTeam.players[playerToHire.role];
     let newBudget = userTeam.budget;
+    
     if (currentPlayerInRole) {
       newBudget += currentPlayerInRole.price;
     }
-    newBudget -= player.price;
+    
+    newBudget -= playerToHire.price;
+
     setUserTeam({
       ...userTeam,
-      players: { ...userTeam.players, [player.role]: player },
+      players: { ...userTeam.players, [playerToHire.role]: playerToHire },
       budget: newBudget,
     });
+
+    setPendingPlayer(null);
   };
 
   const handleFirePlayer = (role: Role) => {
@@ -66,7 +89,7 @@ const App: React.FC = () => {
       case 'dashboard':
         return <Dashboard userTeam={userTeam} onNavigate={setCurrentPage} />;
       case 'market':
-        return <Market players={MOCK_PLAYERS} userTeam={userTeam} onHire={handleHirePlayer} onFire={handleFirePlayer} />;
+        return <Market players={MOCK_PLAYERS} userTeam={userTeam} onHire={handleOpenChampionSelector} onFire={handleFirePlayer} />;
       case 'squad':
         return <SquadBuilder userTeam={userTeam} onFire={handleFirePlayer} onNavigateToMarket={() => setCurrentPage('market')} />;
       case 'ranking':
@@ -82,6 +105,14 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#050505] text-[#f0f0f0]">
+      {pendingPlayer && (
+        <ChampionSelector 
+          playerName={pendingPlayer.name}
+          onSelect={handleHirePlayer}
+          onClose={() => setPendingPlayer(null)}
+        />
+      )}
+
       <Header 
         activePage={currentPage} 
         onNavigate={setCurrentPage} 
