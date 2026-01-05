@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { UserTeam, Role } from '../types';
 import { MOCK_PLAYERS } from '../constants';
+import PlayerImage from './PlayerImage';
 
 interface DashboardProps {
   userTeam: UserTeam;
@@ -59,12 +60,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
     .sort((a, b) => b.points - a.points)
     .slice(0, 5)
     .map((p, idx) => ({ ...p, choices: Math.floor(5000 - (idx * 380)) }));
-
-  const newsItems = [
-    { id: 1, category: 'MERCADO', title: 'JANELA DE TRANSFERÊNCIAS: QUEM SOBE?', description: 'Analistas debutam nomes que prometem abalar a tabela.', image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop', date: '12 MAR' },
-    { id: 2, category: 'COMPETITIVO', title: 'GUIA DE SCOUTING: COMO MONTAR SEU TIME', description: 'Confira as métricas essenciais de KDA e Farm.', image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2071&auto=format&fit=crop', date: '10 MAR' },
-    { id: 3, category: 'PATCH', title: 'MUDANÇAS NO META: ASSASSINOS VOLTAM?', description: 'Como as mudanças impactam a pontuação.', image: 'https://images.unsplash.com/photo-1605897472359-85e4b948215d?q=80&w=2070&auto=format&fit=crop', date: '08 MAR' }
-  ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -146,7 +141,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                 </div>
                 <div className="flex-1">
                   <p className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.2em] mb-1">CORTES DA ILHA</p>
-                  <h3 className="text-3xl md:text-4xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">O DIA QUE O ESA FEZ HISTÓRIA na KINGS LENDAS | GENGG vs KCP</h3>
+                  <h3 className="text-3xl md:text-4xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">O DIA QUE O ESA FEZ HISTÓRIA na KINGS LENDAS</h3>
                 </div>
               </div>
             </div>
@@ -172,7 +167,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                 <div key={p.id} className="flex items-center p-6 hover:bg-white/[0.01] transition-colors group cursor-pointer">
                   <div className="w-10 text-center text-white font-orbitron font-black text-lg mr-6 opacity-30 group-hover:opacity-100 transition-opacity">{i + 1}</div>
                   <div className="w-14 h-14 bg-black rounded-xl border border-white/10 mr-6 group-hover:border-[#c89b3c]/50 transition-colors overflow-hidden">
-                    <img src={p.image} className="w-full h-full object-contain" alt="" />
+                    <PlayerImage player={p} className="w-full h-full" />
                   </div>
                   <div className="flex-1">
                     <h4 className="font-orbitron font-black text-[#c89b3c] text-xl uppercase leading-none mb-1">{p.name}</h4>

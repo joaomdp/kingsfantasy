@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { UserTeam, Role, Player } from '../types';
 import PlayerImage from './PlayerImage';
+import TeamLogo from './TeamLogo';
 import MatchHistoryModal from './MatchHistoryModal';
 
 interface SquadBuilderProps {
@@ -14,17 +15,23 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
   const [historyPlayer, setHistoryPlayer] = useState<Player | null>(null);
   
   const roles = [
-    { id: Role.TOP, label: 'TOP', top: '22%', left: '18%', labelPos: 'bottom-[-34px]' },
-    { id: Role.JNG, label: 'JUN', top: '38%', left: '35%', labelPos: 'bottom-[-34px]' },
-    { id: Role.MID, label: 'MID', top: '54%', left: '52%', labelPos: 'bottom-[-34px]' },
-    { id: Role.ADC, label: 'ADC', top: '86%', left: '78%', labelPos: 'bottom-[-34px]' },
-    { id: Role.SUP, label: 'SUP', top: '76%', left: '90%', labelPos: 'bottom-[-34px]' },
+    { id: Role.TOP, label: 'TOP', top: '22%', left: '18%' },
+    { id: Role.JNG, label: 'JUN', top: '38%', left: '35%' },
+    { id: Role.MID, label: 'MID', top: '54%', left: '52%' },
+    { id: Role.ADC, label: 'ADC', top: '86%', left: '78%' },
+    { id: Role.SUP, label: 'SUP', top: '76%', left: '90%' },
   ];
 
   const formatValue = (val: number) => {
     if (Number.isInteger(val)) return val.toString();
     return val.toFixed(1).replace(',', '.');
   };
+
+  const roundPoints = useMemo(() => {
+    return Object.values(userTeam.players)
+      .filter((p): p is Player => !!p)
+      .reduce((sum, p) => sum + p.points, 0);
+  }, [userTeam.players]);
 
   const roleIcons: Record<string, string> = {
     [Role.TOP]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-top.png',
@@ -34,87 +41,111 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
     [Role.SUP]: 'https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-clash/global/default/assets/images/position-selector/positions/icon-position-utility.png',
   };
 
-  return (
-    <div className="max-w-[1240px] mx-auto space-y-16 animate-in fade-in duration-1000 pb-32">
-      {/* MODAL DE HISTÓRICO REUTILIZÁVEL */}
-      {historyPlayer && (
-        <MatchHistoryModal player={historyPlayer} onClose={() => setHistoryPlayer(null)} />
-      )}
+  const PowerModule = ({ label, value, icon, isCoin = false }: { label: string, value: string | number, icon?: React.ReactNode, isCoin?: boolean }) => (
+    <div className="flex-1 group relative flex flex-col items-center justify-center py-8 border-r border-white/5 last:border-r-0 overflow-hidden cursor-pointer">
+      {/* HUD Accents */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20"></div>
+      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20"></div>
+      
+      {/* Background Glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
 
-      {/* SEÇÃO HERO */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start pt-4">
-        <div className="lg:col-span-6 space-y-10 pt-8">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-[#c89b3c]/20 bg-[#c89b3c]/5 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c89b3c] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#c89b3c]"></span>
-              </span>
-              <span className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.3em]">Status: Operacional</span>
+      <div className="flex flex-col items-center gap-2 relative z-10">
+        {icon && (
+          <div className={`transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            isCoin 
+              ? 'grayscale opacity-20 scale-75 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-[1.8] group-hover:-translate-y-2' 
+              : 'opacity-10 group-hover:opacity-100 group-hover:scale-110'
+          }`}>
+            <div className={`${isCoin ? 'drop-shadow-[0_0_20px_rgba(200,155,60,0)] group-hover:drop-shadow-[0_0_25px_rgba(200,155,60,0.9)]' : ''}`}>
+              {icon}
             </div>
-            <h1 className="text-9xl font-orbitron font-black text-white uppercase tracking-tighter leading-[0.8] drop-shadow-2xl">
-              {userTeam.name}
-            </h1>
-            <p className="text-gray-500 text-lg max-w-lg font-medium leading-relaxed">
-              Interface avançada de gestão para a <span className="text-gray-300">Kings Lendas</span>. 
-              Sincronize sua estratégia e maximize seu rendimento tático.
-            </p>
           </div>
+        )}
+        <div className="text-center transform transition-transform duration-500 group-hover:translate-y-1">
+          <span className={`text-2xl md:text-4xl font-orbitron font-black tracking-tighter transition-all duration-500 ${isCoin ? 'text-gray-600 group-hover:text-white' : 'text-white'}`}>
+            {value}
+          </span>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <div className="w-1 h-1 rounded-full bg-gray-800 group-hover:bg-[#c89b3c] group-hover:animate-pulse"></div>
+            <span className="text-[7px] font-black text-gray-500 uppercase tracking-[0.3em] group-hover:text-[#c89b3c] transition-colors">
+              {label}
+            </span>
+          </div>
+        </div>
+      </div>
 
-          <div className="flex gap-20">
-            <div className="group cursor-default">
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-gray-500 transition-colors">RANKING LIGA</span>
-              <p className="text-6xl font-orbitron font-black text-white tracking-tighter mt-2">{formatValue(userTeam.totalPoints)}</p>
-            </div>
-            <div className="group cursor-default">
-              <span className="text-[10px] font-black text-gray-700 uppercase tracking-[0.2em] group-hover:text-gray-500 transition-colors">PAITRIMÔNIO</span>
-              <div className="flex items-center gap-5 mt-2">
-                <img src="https://i.imgur.com/4odZyzF.png" className="w-10 h-10 object-contain" alt="" />
-                <p className="text-6xl font-orbitron font-black text-white tracking-tighter group-hover:text-[#c89b3c] transition-colors">{formatValue(userTeam.budget)}</p>
+      {/* Activation Line */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#c89b3c] group-hover:w-1/2 transition-all duration-700 shadow-[0_0_10px_#c89b3c]"></div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-[1280px] mx-auto space-y-16 animate-in fade-in duration-1000 pb-32">
+      {historyPlayer && <MatchHistoryModal player={historyPlayer} onClose={() => setHistoryPlayer(null)} />}
+
+      {/* HEADER TÁTICO */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start pt-10">
+        <div className="lg:col-span-8 flex flex-col gap-10">
+          <div className="relative">
+            {/* Decoração Tech */}
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-1 h-24 bg-gradient-to-b from-transparent via-[#c89b3c] to-transparent opacity-50"></div>
+            
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="px-3 py-1 bg-white/5 border border-white/10 rounded flex items-center gap-2">
+                  <span className="text-[8px] font-black text-gray-500 tracking-[0.2em] uppercase">SISTEMA ONLINE</span>
+                  <div className="w-1 h-1 bg-green-500 rounded-full animate-ping"></div>
+                </div>
+                <div className="h-px w-20 bg-white/10"></div>
+              </div>
+
+              <h1 className="text-8xl md:text-[11rem] font-orbitron font-black text-white uppercase tracking-tighter leading-[0.75] mix-blend-difference">
+                {userTeam.name}
+              </h1>
+
+              <div className="flex items-center gap-8">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">PATENTE ATUAL</span>
+                  <span className="text-xl font-orbitron font-black text-[#c89b3c]">{userTeam.rank}</span>
+                </div>
+                <div className="w-px h-10 bg-white/5"></div>
+                <button 
+                  onClick={onNavigateToMarket}
+                  className="group relative px-10 py-4 overflow-hidden border border-[#c89b3c]/30 hover:border-[#c89b3c] transition-colors rounded-lg"
+                >
+                  <div className="absolute inset-0 bg-[#c89b3c] translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                  <span className="relative z-10 text-[10px] font-black text-[#c89b3c] group-hover:text-black uppercase tracking-[0.3em] font-orbitron">ABRIR MERCADO</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-6 flex justify-end">
-          <div className="relative w-full max-w-[560px] aspect-square rounded-[50px] overflow-hidden bg-[#020202] border border-white/5 shadow-[0_40px_100px_rgba(0,0,0,0.8)]">
-            <img 
-              src="https://i.imgur.com/myc9dfj.png" 
-              className="w-full h-full object-cover opacity-70 contrast-[1.2] brightness-75 transition-transform duration-[10s] hover:scale-105" 
-              alt="Tactical Map" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40 pointer-events-none"></div>
-            <div className="absolute top-8 left-8 border-l border-[#c89b3c]/40 pl-4 py-2 opacity-50">
-              <p className="text-[8px] font-black text-white uppercase tracking-widest">MAPA TÁTICO V3.1</p>
-              <p className="text-[7px] font-medium text-gray-500 uppercase">SUMMONER'S RIFT SECTOR</p>
-            </div>
-
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          {/* MAPA ESTILO RADAR */}
+          <div className="relative w-full aspect-square rounded-[2.5rem] overflow-hidden border border-white/10 bg-black shadow-[0_0_80px_rgba(0,0,0,1)] group">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+            <img src="https://i.imgur.com/myc9dfj.png" className="w-full h-full object-cover opacity-40 contrast-[1.4] transition-all duration-[20s] group-hover:scale-110 group-hover:rotate-2" alt="Tactical Map" />
+            
             {roles.map(role => {
               const p = userTeam.players[role.id];
               return (
-                <div key={role.id} className="absolute -translate-x-1/2 -translate-y-1/2 z-20" style={{ top: role.top, left: role.left }}>
-                  <div className="relative group cursor-pointer" onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}>
-                    <div className={`w-24 h-24 rounded-full flex items-center justify-center transition-all duration-700 relative border-2 ${
-                      p ? 'border-[#c89b3c] bg-black scale-110 shadow-[0_0_40px_rgba(200,155,60,0.5)]' : 'border-white/10 bg-black/80 hover:border-white/30'
+                <div key={role.id} className="absolute -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center" style={{ top: role.top, left: role.left }}>
+                  <div className="relative group/marker cursor-pointer" onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}>
+                    <div className={`w-8 h-8 rounded-full border-2 transition-all duration-500 relative flex items-center justify-center ${
+                      p ? 'border-[#c89b3c] bg-black shadow-[0_0_15px_#c89b3c]' : 'border-white/10 bg-black/80 hover:border-white/40'
                     }`}>
                       {p ? (
-                        <div className="w-full h-full rounded-full overflow-hidden p-1">
+                        <div className="w-full h-full rounded-full overflow-hidden p-0.5">
                           <PlayerImage player={p} className="w-full h-full rounded-full" />
                         </div>
                       ) : (
-                        <i className="fa-solid fa-plus text-white/20 text-sm group-hover:text-white/60 transition-colors"></i>
+                        <div className="w-0.5 h-0.5 bg-white/20 rounded-full group-hover/marker:scale-[4] group-hover/marker:bg-[#c89b3c] transition-all"></div>
                       )}
-                      
-                      {p?.selectedChampion && (
-                        <div className="absolute bottom-[-10%] right-[-10%] w-10 h-10 rounded-full border-2 border-black bg-black p-0.5 z-40 shadow-2xl scale-110">
-                          <img src={p.selectedChampion.image} className="w-full h-full rounded-full object-cover" alt="" />
-                        </div>
-                      )}
-                      
-                      {p && <div className="absolute -inset-2 border border-[#c89b3c]/20 rounded-full animate-[spin_8s_linear_infinite] pointer-events-none"></div>}
                     </div>
-                    <div className={`absolute ${role.labelPos} left-1/2 -translate-x-1/2 bg-black/90 px-3 py-1 rounded-sm border border-white/10 text-[9px] font-black text-white uppercase tracking-widest backdrop-blur-md opacity-80 group-hover:opacity-100 transition-opacity`}>
-                      {role.label}
+                    <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2">
+                       <span className={`text-[6px] font-orbitron font-black uppercase tracking-widest ${p ? 'text-[#c89b3c]' : 'text-gray-700'}`}>{role.label}</span>
                     </div>
                   </div>
                 </div>
@@ -124,93 +155,114 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         </div>
       </div>
 
-      {/* LINE-UP SECTION */}
-      <div className="space-y-12 pt-10">
-        <div className="flex items-center gap-10">
-          <h2 className="text-[12px] font-black text-gray-700 uppercase tracking-[0.5em] whitespace-nowrap">LINE-UP</h2>
-          <div className="h-[2px] flex-1 bg-gradient-to-r from-white/10 via-white/[0.02] to-transparent"></div>
+      {/* CORE STATS HUB */}
+      <div className="relative">
+        <div className="absolute -top-4 left-6 px-4 bg-black z-10 text-[8px] font-black text-gray-700 tracking-[0.4em] uppercase">DADOS DA CONTA</div>
+        <div className="flex items-stretch bg-[#050505] border border-white/5 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-3xl">
+          <PowerModule 
+            label="PATRIMÔNIO" 
+            value={formatValue(userTeam.budget)} 
+            isCoin={true}
+            icon={<img src="https://i.imgur.com/4odZyzF.png" className="w-8 h-8 object-contain" alt="Coin" />} 
+          />
+          <PowerModule 
+            label="PONTOS NA RODADA" 
+            value={formatValue(roundPoints)} 
+            icon={<i className="fa-solid fa-bolt text-xl text-white/5 group-hover:text-yellow-400 group-hover:drop-shadow-[0_0_10px_#facc15] transition-all"></i>}
+          />
+          <PowerModule 
+            label="PONTOS TOTAIS" 
+            value={formatValue(userTeam.totalPoints)} 
+            icon={<i className="fa-solid fa-trophy text-xl text-white/5 group-hover:text-cyan-400 group-hover:drop-shadow-[0_0_10px_#22d3ee] transition-all"></i>}
+          />
+        </div>
+      </div>
+
+      {/* LINE-UP SECTION - AJUSTADO BADGE CAMPEÃO */}
+      <div className="space-y-12">
+        <div className="flex items-center gap-6">
+          <h2 className="text-[10px] font-black text-gray-700 uppercase tracking-[0.6em]">LINEUP OFICIAL</h2>
+          <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
           {roles.map((role) => {
             const p = userTeam.players[role.id];
             const displayChampion = p?.selectedChampion || p?.lastChampion;
-            
             return (
               <div key={role.id} className="group relative">
-                <div className="absolute -inset-1 bg-gradient-to-b from-[#c89b3c]/20 to-transparent rounded-[42px] blur opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                
-                <div className="glass-card rounded-[40px] border border-white/5 flex flex-col overflow-hidden hover:border-[#c89b3c]/40 transition-all duration-700 relative bg-[#050505]">
+                <div className={`relative flex flex-col transition-all duration-700 bg-black border rounded-2xl overflow-hidden ${
+                  p ? 'border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.8)]' : 'border-dashed border-white/5 opacity-30 grayscale hover:opacity-100 hover:grayscale-0'
+                }`}>
                   
-                  <div className="px-6 pt-6 flex justify-between items-center z-10">
-                    <span className="text-[9px] font-black text-[#c89b3c] uppercase tracking-[0.2em]">{role.label === 'JUN' ? 'JUNGLE' : role.id}</span>
+                  {/* Card Header */}
+                  <div className="px-4 py-3 bg-white/[0.02] border-b border-white/5 flex justify-between items-center">
+                    <span className="text-[7px] font-orbitron font-black text-gray-500 group-hover:text-[#c89b3c] transition-colors tracking-widest">{role.label}</span>
                     {p && (
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onFire(role.id); }}
-                        className="w-7 h-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all scale-90 group-hover:scale-100"
-                      >
-                        <i className="fa-solid fa-trash-can text-[10px]"></i>
+                      <button onClick={(e) => { e.stopPropagation(); onFire(role.id); }} className="text-red-500/20 hover:text-red-500 transition-colors">
+                        <i className="fa-solid fa-power-off text-[9px]"></i>
                       </button>
                     )}
                   </div>
 
-                  <div 
-                    className="relative w-full aspect-[1/1.2] cursor-pointer group/avatar" 
-                    onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}
-                  >
+                  {/* Player Image Module */}
+                  <div className="relative aspect-[4/5] overflow-hidden cursor-pointer" onClick={() => p ? setHistoryPlayer(p) : onNavigateToMarket()}>
                     {p ? (
                       <>
-                        <PlayerImage player={p} className="w-full h-full transition-all duration-[2s] grayscale-[0.2] group-hover:grayscale-0" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-80"></div>
-                        
-                        <div className="absolute top-4 left-6 transition-transform duration-500">
-                           <div className="w-10 h-10 bg-black/60 backdrop-blur-md rounded-xl border border-white/10 p-2 shadow-2xl overflow-hidden">
-                              <img src={p.teamLogo} className="w-full h-full object-contain" alt={p.team} />
-                           </div>
-                        </div>
-
-                        {/* BADGE DO CAMPEÃO */}
-                        {displayChampion && (
-                          <div className="absolute bottom-2 right-2 z-40 transform translate-x-1 translate-y-1">
-                            <div className="relative w-16 h-16 rounded-full p-1 bg-black border border-white/10 shadow-[0_12px_30px_rgba(0,0,0,0.9)] overflow-hidden group-hover:scale-110 transition-transform duration-500">
-                               <div className="absolute inset-0 bg-gradient-to-tr from-[#c89b3c]/30 to-transparent pointer-events-none"></div>
-                               <img 
-                                 src={displayChampion.image} 
-                                 className="w-full h-full object-cover rounded-full border border-black" 
-                                 alt={displayChampion.name} 
-                                 title={displayChampion.name}
-                               />
-                            </div>
+                        <PlayerImage player={p} className="w-full h-full object-top transition-transform duration-1000 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
+                        <div className="absolute top-3 left-3 flex flex-col gap-1">
+                          <div className="w-8 h-8 bg-black/80 backdrop-blur-md rounded border border-white/10 p-1.5 shadow-xl">
+                            <TeamLogo logoUrl={p.teamLogo} teamName={p.team} className="w-full h-full" />
                           </div>
-                        )}
+                          <span className="text-[6px] font-black text-white/40 uppercase bg-black/40 px-1 py-0.5 rounded backdrop-blur-sm">DADOS DO ATLETA</span>
+                        </div>
                       </>
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center space-y-4 border-2 border-dashed border-white/5 m-4 rounded-[30px] bg-white/[0.01] group-hover:border-[#c89b3c]/20 group-hover:bg-[#c89b3c]/5 transition-all">
-                        <i className="fa-solid fa-user-plus text-3xl text-white/5 group-hover:text-[#c89b3c]/40 transition-all"></i>
-                        <p className="text-[10px] font-black text-gray-800 uppercase tracking-widest group-hover:text-[#c89b3c]/60">CONTRATAR</p>
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-white/[0.01]">
+                        <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center">
+                          <i className="fa-solid fa-plus text-white/5 text-xs"></i>
+                        </div>
+                        <span className="text-[8px] font-black text-gray-800 uppercase tracking-widest">VAGA DISPONÍVEL</span>
+                      </div>
+                    )}
+
+                    {/* Champion Badge EQUILIBRADO */}
+                    {p && displayChampion && (
+                      <div className="absolute bottom-2 right-2 z-20 group-hover:scale-110 transition-transform duration-500">
+                         <div className="relative w-14 h-14">
+                            <img src={displayChampion.image} className="w-full h-full rounded-full border-4 border-black bg-black object-cover shadow-2xl" alt="" />
+                            <div className="absolute inset-0 rounded-full border-2 border-[#c89b3c]/40 animate-pulse"></div>
+                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-6 pt-4 space-y-2 relative z-10 cursor-pointer" onClick={() => p && setHistoryPlayer(p)}>
-                    <div className="flex items-center gap-3">
-                       <img src={roleIcons[role.id]} className="w-4 h-4 brightness-200 opacity-60" alt="" />
-                       <h3 className={`font-orbitron font-black text-lg truncate uppercase tracking-tighter transition-colors ${p ? 'text-white group-hover:text-[#c89b3c]' : 'text-gray-800'}`}>
-                         {p ? p.name : 'SLOT VAZIO'}
+                  {/* Player Info */}
+                  <div className="p-5 space-y-3 relative z-10" onClick={() => p && setHistoryPlayer(p)}>
+                    <div className="flex items-center gap-2">
+                       <img src={roleIcons[role.id]} className="w-3.5 h-3.5 brightness-200 opacity-20 group-hover:opacity-100 transition-all" alt="" />
+                       <h3 className={`font-orbitron font-black text-base truncate uppercase tracking-tighter ${p ? 'text-white' : 'text-gray-800'}`}>
+                         {p ? p.name : 'SEM CONVOCAÇÃO'}
                        </h3>
                     </div>
-                    
-                    <div className="flex items-center justify-between">
-                       <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ${p ? 'text-gray-600' : 'text-gray-900'}`}>
-                         {p ? p.team : 'DISPONÍVEL'}
-                       </p>
-                       {p && (
-                         <span className="text-[9px] font-black text-[#c89b3c] hover:text-white uppercase tracking-widest transition-colors flex items-center gap-2">
-                           <i className="fa-solid fa-chart-simple"></i>
-                           Dados
-                         </span>
-                       )}
-                    </div>
+                    {p && (
+                      <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                         <div className="flex flex-col">
+                            <span className="text-[6px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1">VALOR</span>
+                            <span className="text-[10px] font-orbitron font-black text-[#c89b3c]">C$ {p.price}</span>
+                         </div>
+                         <div className="flex flex-col items-end">
+                            <span className="text-[6px] font-black text-gray-600 uppercase tracking-widest leading-none mb-1">ÚLTIMO SCORE</span>
+                            <span className="text-[10px] font-orbitron font-black text-white">{p.points}</span>
+                         </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Scan Animation */}
+                  <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-10 transition-opacity">
+                    <div className="w-full h-px bg-white animate-[scan_2.5s_linear_infinite]"></div>
                   </div>
                 </div>
               </div>
@@ -218,6 +270,13 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
           })}
         </div>
       </div>
+      
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(500%); }
+        }
+      `}</style>
     </div>
   );
 };

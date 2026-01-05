@@ -27,6 +27,12 @@ export interface Player {
   selectedChampion?: Champion;
 }
 
+export interface UserPreferences {
+  publicProfile: boolean;
+  marketNotifications: boolean;
+  compactMode: boolean;
+}
+
 export interface UserTeam {
   id: string;
   userId: string;
@@ -34,11 +40,14 @@ export interface UserTeam {
   name: string;
   avatar: string;
   rank: string;
+  level: number;
+  honor: number;
   players: {
     [key in Role]?: Player;
   };
   budget: number;
   totalPoints: number;
+  preferences?: UserPreferences;
 }
 
 export interface RankingEntry {

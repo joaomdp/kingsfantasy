@@ -5,14 +5,15 @@ import { Page } from '../types';
 interface HeaderProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
-  teamName: string;
+  userName: string;
   rank: string;
   avatar: string;
+  dbConnected?: boolean;
 }
 
 const Logo: React.FC = () => {
   const [hasError, setHasError] = useState(false);
-  const logoUrl = "times/kingslendas.png"; 
+  const logoUrl = "https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/logo.png"; 
 
   return (
     <div className="flex items-center gap-6 group">
@@ -22,31 +23,23 @@ const Logo: React.FC = () => {
             <div className="absolute inset-0 bg-gold/10 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <img 
               src={logoUrl} 
-              alt="Kings Lendas Logo" 
+              alt="Kings Lendas Fantasy Logo" 
               className="relative z-10 h-full w-auto object-contain transition-all duration-500 drop-shadow-[0_0_15px_rgba(200,155,60,0.25)] group-hover:drop-shadow-[0_0_25px_rgba(200,155,60,0.45)]"
               onError={() => setHasError(true)}
             />
           </div>
         ) : (
           <div className="flex flex-col">
-            <span className="font-orbitron font-black text-white text-2xl tracking-tighter leading-none group-hover:text-gold transition-colors">KINGS LENDAS</span>
+            <span className="font-orbitron font-black text-white text-2xl tracking-tighter leading-none group-hover:text-gold transition-colors uppercase">KINGS LENDAS</span>
             <span className="text-[11px] font-black text-gold tracking-[0.1em] uppercase">FANTASY</span>
           </div>
         )}
-      </div>
-      
-      <div className="hidden xl:flex flex-col border-l border-white/10 pl-7 py-1.5">
-        <div className="flex items-center gap-2">
-          <span className="font-orbitron font-black text-white text-[11px] tracking-[0.05em] leading-none uppercase">KINGS LENDAS</span>
-          <div className="bg-gold/20 text-gold text-[9px] font-black px-2 py-0.5 rounded-sm leading-none italic uppercase border border-gold/30">FANTASY</div>
-        </div>
-        <span className="text-[10px] font-black text-gray-500 tracking-[0.15em] uppercase mt-2">Season 2026</span>
       </div>
     </div>
   );
 };
 
-const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, teamName, rank, avatar }) => {
+const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank, avatar, dbConnected = true }) => {
   const navItems: { id: Page; label: string }[] = [
     { id: 'dashboard', label: 'Início' },
     { id: 'ranking', label: 'Ligas' },
@@ -84,10 +77,14 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, teamName, rank,
 
         <div className="flex items-center gap-10">
           <div className="hidden xl:flex flex-col text-right border-r border-white/10 pr-10">
-             <span className="text-[10px] font-black text-gold tracking-wider uppercase">MERCADO ABERTO</span>
+             <span className="text-[10px] font-black text-gold tracking-wider uppercase">
+               {dbConnected ? 'CONEXÃO ATIVA' : 'MODO OFFLINE'}
+             </span>
              <div className="flex items-center justify-end gap-1.5 mt-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></span>
-                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">Live Status</span>
+                <span className={`w-2 h-2 rounded-full animate-pulse shadow-lg ${dbConnected ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`}></span>
+                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">
+                  {dbConnected ? 'Database Sync' : 'Reconectando...'}
+                </span>
              </div>
           </div>
           
@@ -104,7 +101,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, teamName, rank,
                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full shadow-lg"></div>
              </div>
              <div className="hidden sm:block text-left">
-                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none mb-1 group-hover:text-gold transition-colors">{teamName}</p>
+                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none mb-1 group-hover:text-gold transition-colors">{userName}</p>
                 <div className="flex items-center gap-1.5">
                   <i className="fa-solid fa-medal text-[9px] text-gold/80"></i>
                   <span className="text-[10px] text-gold font-black uppercase tracking-widest">{rank}</span>

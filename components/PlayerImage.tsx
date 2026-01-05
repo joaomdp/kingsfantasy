@@ -12,21 +12,20 @@ const PlayerImage: React.FC<PlayerImageProps> = ({ player, className, priority =
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fallback visual caso o GitHub bloqueie o acesso (Repo Privado)
-  const fallbackAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.name}&backgroundColor=0a0a0a&top=shortHair,shortCurly,flat701`;
+  // Avatar de contingência de alta qualidade usando DiceBear (estilo Invocador)
+  const fallbackAvatar = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${player.name}&backgroundColor=0a0a0a&eyes=closed,shade&mouth=smile`;
 
   useEffect(() => {
-    // Reset state when player changes
     setHasError(false);
     setIsLoading(true);
-  }, [player.id, player.image]);
+  }, [player.image, player.name]);
 
   return (
     <div className={`${className} relative overflow-hidden bg-[#0a0a0a] flex items-center justify-center`}>
-      {/* Shimmer Effect - Perceptual Performance Improvement */}
+      {/* Skeleton / Shimmer */}
       {isLoading && (
-        <div className="absolute inset-0 z-10">
-          <div className="w-full h-full bg-gradient-to-r from-transparent via-white/[0.03] to-transparent bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] bg-no-repeat"></div>
+        <div className="absolute inset-0 z-10 bg-[#0a0a0a]">
+          <div className="w-full h-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]"></div>
           <style>{`
             @keyframes shimmer {
               0% { background-position: -200% 0; }
@@ -39,27 +38,22 @@ const PlayerImage: React.FC<PlayerImageProps> = ({ player, className, priority =
       <img 
         src={hasError ? fallbackAvatar : player.image} 
         className={`w-full h-full object-cover object-center transition-all duration-700 
-          ${isLoading ? 'opacity-0 scale-105' : 'opacity-100 scale-100'} 
-          ${hasError ? 'p-2 brightness-75 scale-90' : ''}`}
+          ${isLoading ? 'opacity-0 scale-110' : 'opacity-100 scale-100'} 
+          ${hasError ? 'p-3 brightness-90 grayscale-[0.5]' : ''}`}
         alt={player.name}
         onLoad={() => setIsLoading(false)}
-        loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        fetchpriority={priority ? "high" : "auto"}
         onError={() => {
           if (!hasError) {
-            console.warn(`[Kings] A imagem de ${player.name} falhou. Verifique se o repo é PÚBLICO: ${player.image}`);
             setHasError(true);
             setIsLoading(false);
           }
         }}
+        loading={priority ? "eager" : "lazy"}
       />
-
-      {/* Selo de Erro Discreto */}
-      {hasError && (
-        <div className="absolute top-1 right-1 z-30 opacity-20 hover:opacity-100 transition-opacity">
-           <i className="fa-solid fa-circle-exclamation text-[8px] text-red-500" title="Link Quebrado ou Privado"></i>
-        </div>
+      
+      {/* Overlay de carregamento para falhas silenciosas */}
+      {hasError && !isLoading && (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
       )}
     </div>
   );
