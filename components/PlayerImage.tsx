@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Player } from '../types';
+import { DataService } from '../services/api';
 
 interface PlayerImageProps {
   player: Player;
@@ -12,49 +13,47 @@ const PlayerImage: React.FC<PlayerImageProps> = ({ player, className, priority =
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Avatar de contingência de alta qualidade usando DiceBear (estilo Invocador)
+  // Se a imagem for apenas um path (ex: ayel.webp), resolvemos via Supabase
+  const imageUrl = player.image.startsWith('http') 
+    ? player.image 
+    : DataService.getStorageUrl('players', player.image);
+
+  // Avatar de contingência de alta qualidade usando DiceBear
   const fallbackAvatar = `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${player.name}&backgroundColor=0a0a0a&eyes=closed,shade&mouth=smile`;
 
   useEffect(() => {
     setHasError(false);
     setIsLoading(true);
-  }, [player.image, player.name]);
+  }, [imageUrl]);
 
   return (
     <div className={`${className} relative overflow-hidden bg-[#0a0a0a] flex items-center justify-center`}>
-      {/* Skeleton / Shimmer */}
       {isLoading && (
         <div className="absolute inset-0 z-10 bg-[#0a0a0a]">
           <div className="w-full h-full bg-gradient-to-r from-transparent via-white/[0.05] to-transparent bg-[length:200%_100%] animate-[shimmer_1.5s_infinite]"></div>
-          <style>{`
-            @keyframes shimmer {
-              0% { background-position: -200% 0; }
-              100% { background-position: 200% 0; }
-            }
-          `}</style>
         </div>
       )}
       
       <img 
-        src={hasError ? fallbackAvatar : player.image} 
+        src={hasError ? fallbackAvatar : imageUrl} 
         className={`w-full h-full object-cover object-center transition-all duration-700 
           ${isLoading ? 'opacity-0 scale-110' : 'opacity-100 scale-100'} 
           ${hasError ? 'p-3 brightness-90 grayscale-[0.5]' : ''}`}
         alt={player.name}
         onLoad={() => setIsLoading(false)}
         onError={() => {
-          if (!hasError) {
-            setHasError(true);
-            setIsLoading(false);
-          }
+          setHasError(true);
+          setIsLoading(false);
         }}
         loading={priority ? "eager" : "lazy"}
       />
       
-      {/* Overlay de carregamento para falhas silenciosas */}
-      {hasError && !isLoading && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"></div>
-      )}
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
     </div>
   );
 };

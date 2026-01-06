@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { UserTeam, Role } from '../types';
+import { UserTeam, Role, Player } from '../types';
 import { MOCK_PLAYERS } from '../constants';
 import PlayerImage from './PlayerImage';
 
@@ -12,6 +12,8 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
   const [pickedFilter, setPickedFilter] = useState<Role | 'TODOS'>('TODOS');
   
+  const rolesList = [Role.TOP, Role.JNG, Role.MID, Role.ADC, Role.SUP];
+
   const roleMetadata: Record<string, { label: string; icon: string }> = {
     TODOS: { 
       label: 'TODOS', 
@@ -44,7 +46,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
     return (
       <img 
         src="https://i.imgur.com/4odZyzF.png" 
-        className={`${dims} object-contain`}
+        className={`${dims} object-contain invert-[0.1] sepia-[1] saturate-[5] hue-rotate-[240deg]`}
         alt="Moeda PAI"
       />
     );
@@ -69,7 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           <div className="glass-card rounded-[32px] p-8 border border-white/5 relative overflow-hidden group">
             <div className="relative z-10">
               <div className="flex items-center gap-5 mb-10">
-                <div className="w-16 h-16 bg-black rounded-2xl border border-[#c89b3c]/20 flex items-center justify-center text-[#c89b3c] shadow-2xl">
+                <div className="w-16 h-16 bg-black rounded-2xl border border-[#bc13fe]/20 flex items-center justify-center text-[#bc13fe] shadow-2xl">
                   <i className="fa-solid fa-crown text-2xl"></i>
                 </div>
                 <div>
@@ -84,11 +86,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                     <span>SALDO ATUAL</span>
                     <div className="flex items-center gap-2">
                        <PaiCoin size="sm" />
-                       <span className="text-[#c89b3c] font-orbitron font-black text-sm">{formatValue(userTeam.budget)}</span>
+                       <span className="text-xl font-orbitron font-black text-white">{formatValue(userTeam.budget)}</span>
                     </div>
                   </div>
                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#c89b3c]" style={{ width: `${(userTeam.budget / 100) * 100}%` }}></div>
+                    <div className="h-full bg-[#bc13fe]" style={{ width: `${(userTeam.budget / 100) * 100}%` }}></div>
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-4 border-y border-white/5">
@@ -96,7 +98,49 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
                   <span className="text-xl font-orbitron font-black text-white">{userTeam.totalPoints}</span>
                 </div>
               </div>
-              <button onClick={() => onNavigate('squad')} className="w-full mt-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase hover:bg-[#c89b3c] hover:text-black transition-all">EDITAR LINE-UP</button>
+
+              {/* MINHA ESCALAÇÃO HUD (REPLACE EDIT BUTTON) */}
+              <div 
+                onClick={() => onNavigate('squad')}
+                className="mt-10 space-y-4 cursor-pointer group/lineup"
+              >
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">MINHA ESCALAÇÃO</span>
+                  <i className="fa-solid fa-arrow-right text-[10px] text-[#bc13fe] opacity-0 group-hover/lineup:opacity-100 group-hover/lineup:translate-x-1 transition-all"></i>
+                </div>
+                
+                <div className="grid grid-cols-5 gap-2">
+                  {rolesList.map(role => {
+                    const player = userTeam.players[role];
+                    const champ = player?.selectedChampion || player?.lastChampion;
+                    return (
+                      <div key={role} className="flex flex-col gap-1.5 items-center">
+                        <div className={`aspect-square w-full rounded-xl border transition-all duration-500 relative ${player ? 'border-[#bc13fe]/40 bg-black' : 'border-white/5 bg-white/[0.02]'}`}>
+                          {player ? (
+                            <>
+                              <div className="w-full h-full p-0.5 rounded-xl overflow-hidden">
+                                <PlayerImage player={player} className="w-full h-full rounded-lg" />
+                              </div>
+                              {champ && (
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border border-black bg-black overflow-hidden shadow-lg z-10">
+                                  <img src={champ.image} className="w-full h-full object-cover" alt="" />
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center opacity-10">
+                              <img src={roleMetadata[role].icon} className="w-2.5 h-2.5 brightness-0 invert" alt="" />
+                            </div>
+                          )}
+                        </div>
+                        <span className={`text-[6px] font-black text-center uppercase tracking-tighter truncate w-full ${player ? 'text-[#bc13fe]' : 'text-gray-700'}`}>
+                          {player ? player.name : roleMetadata[role].label.substring(0,3)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -104,10 +148,10 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
         <section>
           <h2 className="text-[13px] font-black text-gray-500 uppercase tracking-tight mb-6">LIGAS</h2>
           <div className="space-y-3">
-            {[{ name: "Américas Elite", icon: "fa-earth-americas", color: "text-blue-400" }, { name: "Kings Cup", icon: "fa-trophy", color: "text-gold" }].map(league => (
-              <div key={league.name} onClick={() => onNavigate('ranking')} className="glass-card p-5 rounded-2xl flex items-center justify-between cursor-pointer border border-white/5 hover:border-[#c89b3c]/40 transition-all group">
+            {[{ name: "Américas Elite", icon: "fa-earth-americas", color: "text-blue-400" }, { name: "Kings Cup", icon: "fa-trophy", color: "text-[#bc13fe]" }].map(league => (
+              <div key={league.name} onClick={() => onNavigate('ranking')} className="glass-card p-5 rounded-2xl flex items-center justify-between cursor-pointer border border-white/5 hover:border-[#bc13fe]/40 transition-all group">
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-[#c89b3c]/10 ${league.color}`}>
+                  <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-[#bc13fe]/10 ${league.color}`}>
                     <i className={`fa-solid ${league.icon} text-sm`}></i>
                   </div>
                   <span className="text-sm font-bold text-gray-300 group-hover:text-white">{league.name}</span>
@@ -119,10 +163,10 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
       </div>
 
       <div className="lg:col-span-9 space-y-12">
-        <section className="relative h-[420px] rounded-[40px] overflow-hidden group border border-[#c89b3c]/20 shadow-[0_0_60px_rgba(0,0,0,0.5)] bg-[#050505]">
+        <section className="relative h-[420px] rounded-[40px] overflow-hidden group border border-[#bc13fe]/20 shadow-[0_0_60px_rgba(0,0,0,0.5)] bg-[#050505]">
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-black"></div>
           <div className="absolute inset-0 p-12 flex flex-col justify-end">
-            <h1 className="text-7xl font-orbitron font-black text-white uppercase tracking-tighter leading-none mb-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">O DESPERTAR DAS <span className="text-[#c89b3c]">LENDAS</span></h1>
+            <h1 className="text-7xl font-orbitron font-black text-white uppercase tracking-tighter leading-none mb-4 animate-in fade-in slide-in-from-bottom-10 duration-1000">O DESPERTAR DAS <span className="text-[#bc13fe]">LENDAS</span></h1>
             <p className="text-gray-400 max-w-lg font-medium animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200">A temporada competitiva começou. Domine o draft, escale seu time e conquiste o topo da Kings Lendas.</p>
           </div>
         </section>
@@ -136,11 +180,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
             <img src="https://i.ytimg.com/vi/jWYN_Z9mmrc/maxresdefault.jpg" className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-all duration-700" alt="Video Thumbnail" />
             <div className="absolute inset-0 p-10 flex flex-col justify-end">
               <div className="flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl border-2 border-[#c89b3c] bg-black p-0.5 shadow-[0_0_30px_rgba(200,155,60,0.3)] overflow-hidden">
+                <div className="w-20 h-20 rounded-2xl border-2 border-[#bc13fe] bg-black p-0.5 shadow-[0_0_30px_rgba(188,19,254,0.3)] overflow-hidden">
                   <img src="https://i.imgur.com/ubXmpdn.png" className="w-full h-full object-contain bg-[#050505]" alt="Channel Logo" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-black text-[#c89b3c] uppercase tracking-[0.2em] mb-1">CORTES DA ILHA</p>
+                  <p className="text-[10px] font-black text-[#bc13fe] uppercase tracking-[0.2em] mb-1">CORTES DA ILHA</p>
                   <h3 className="text-3xl md:text-4xl font-orbitron font-black text-white uppercase tracking-tight leading-tight">O DIA QUE O ESA FEZ HISTÓRIA na KINGS LENDAS</h3>
                 </div>
               </div>
@@ -156,7 +200,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
           <div className="bg-[#121212] rounded-3xl border border-white/5 overflow-hidden shadow-2xl">
             <div className="flex bg-[#1a1a1a] border-b border-white/5 overflow-x-auto no-scrollbar">
               {Object.entries(roleMetadata).map(([key, data]) => (
-                <button key={key} onClick={() => setPickedFilter(key as any)} className={`flex-1 min-w-[120px] py-4 flex items-center justify-center gap-2 border-b-2 transition-all ${pickedFilter === key ? 'border-[#c89b3c] bg-white/5 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+                <button key={key} onClick={() => setPickedFilter(key as any)} className={`flex-1 min-w-[120px] py-4 flex items-center justify-center gap-2 border-b-2 transition-all ${pickedFilter === key ? 'border-[#bc13fe] bg-white/5 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
                   <img src={data.icon} className={`w-4 h-4 ${pickedFilter === key ? 'brightness-150' : 'brightness-50 opacity-50'}`} alt="" />
                   <span className="text-[10px] font-black uppercase">{data.label}</span>
                 </button>
@@ -166,11 +210,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userTeam, onNavigate }) => {
               {trending.map((p, i) => (
                 <div key={p.id} className="flex items-center p-6 hover:bg-white/[0.01] transition-colors group cursor-pointer">
                   <div className="w-10 text-center text-white font-orbitron font-black text-lg mr-6 opacity-30 group-hover:opacity-100 transition-opacity">{i + 1}</div>
-                  <div className="w-14 h-14 bg-black rounded-xl border border-white/10 mr-6 group-hover:border-[#c89b3c]/50 transition-colors overflow-hidden">
+                  <div className="w-14 h-14 bg-black rounded-xl border border-white/10 mr-6 group-hover:border-[#bc13fe]/50 transition-colors overflow-hidden">
                     <PlayerImage player={p} className="w-full h-full" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-orbitron font-black text-[#c89b3c] text-xl uppercase leading-none mb-1">{p.name}</h4>
+                    <h4 className="font-orbitron font-black text-[#bc13fe] text-xl uppercase leading-none mb-1">{p.name}</h4>
                     <p className="text-gray-500 text-sm font-medium">{p.choices.toLocaleString()} convocações</p>
                   </div>
                   <i className="fa-solid fa-chevron-right text-gray-800 mr-4 opacity-0 group-hover:opacity-100 transition-all"></i>

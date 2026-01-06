@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Player } from '../types';
 import PlayerImage from './PlayerImage';
@@ -68,7 +67,7 @@ const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({ player, onClose }
           style={{ 
             padding: '2px', 
             borderRadius: 'inherit',
-            background: `conic-gradient(from ${scrollProgress * 3}deg, transparent 0%, rgba(200, 155, 60, 0.4) 15%, rgba(200, 155, 60, 0.7) 20%, transparent 40%)`,
+            background: `conic-gradient(from ${scrollProgress * 3}deg, transparent 0%, rgba(188, 19, 254, 0.4) 15%, rgba(188, 19, 254, 0.7) 20%, transparent 40%)`,
             mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
             maskComposite: 'exclude',
@@ -78,14 +77,14 @@ const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({ player, onClose }
         ></div>
 
         {/* Header - Identidade da Lenda */}
-        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-br from-[#c89b3c]/10 to-transparent relative z-10">
+        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-gradient-to-br from-[#bc13fe]/10 to-transparent relative z-10">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl border-2 border-[#c89b3c]/30 overflow-hidden bg-black shadow-2xl">
+            <div className="w-16 h-16 rounded-2xl border-2 border-[#bc13fe]/30 overflow-hidden bg-black shadow-2xl">
                <PlayerImage player={player} className="w-full h-full" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black text-[#c89b3c] uppercase tracking-widest">{player.role}</span>
+                <span className="text-[10px] font-black text-[#bc13fe] uppercase tracking-widest">{player.role}</span>
               </div>
               <h3 className="font-orbitron font-black text-2xl text-white uppercase tracking-tighter leading-none">{player.name}</h3>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1 opacity-60">{player.team}</p>
@@ -107,7 +106,7 @@ const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({ player, onClose }
             {mockHistory.map((match, idx) => (
               <div 
                 key={idx} 
-                className="flex items-center justify-between p-5 bg-white/[0.02] rounded-3xl border border-white/5 group hover:border-[#c89b3c]/20 hover:bg-white/[0.04] transition-all duration-300"
+                className="flex items-center justify-between p-5 bg-white/[0.02] rounded-3xl border border-white/5 group hover:border-[#bc13fe]/20 hover:bg-white/[0.04] transition-all duration-300"
               >
                 <div className="flex items-center gap-4">
                   <div className="relative">
@@ -117,7 +116,7 @@ const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({ player, onClose }
                     </div>
                   </div>
                   <div>
-                    <p className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-[#c89b3c] transition-colors">{match.champion}</p>
+                    <p className="text-[13px] font-black text-white uppercase tracking-tight group-hover:text-[#bc13fe] transition-colors">{match.champion}</p>
                     <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">{match.date} • RD {10 - idx}</span>
                   </div>
                 </div>
@@ -140,7 +139,7 @@ const MatchHistoryModal: React.FC<MatchHistoryModalProps> = ({ player, onClose }
              </div>
              <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-4 text-center">
                 <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest mb-1">KDA GERAL</p>
-                <p className="text-lg font-orbitron font-black text-[#c89b3c]">{player.kda}</p>
+                <p className="text-lg font-orbitron font-black text-[#bc13fe]">{player.kda}</p>
              </div>
           </div>
           

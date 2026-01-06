@@ -1,18 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kings Lendas Fantasy | Pro Edition</title>
+    <title>Kings Lendas Fantasy | Purple Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #c89b3c;
-            --gold-bright: #f0e6d2;
-            --hex-blue: #0ac8b9;
+            --accent-color: #bc13fe;
             --bg-deep: #020202;
         }
         
@@ -26,21 +23,17 @@
             overflow-x: hidden;
         }
 
-        /* Camada 1: Halftone Degrade (O efeito pontilhado que desvanece) */
         .bg-pattern-halftone {
             position: fixed;
             inset: 0;
-            /* Pontos brancos bem pequenos e sutis */
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 0);
-            background-size: 18px 18px;
-            /* Máscara que cria o degrade: 100% visível no topo, sumindo até os 60% da tela */
-            mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.5) 30%, transparent 70%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.5) 30%, transparent 70%);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 0);
+            background-size: 20px 20px;
+            mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.7) 40%, transparent 85%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.7) 40%, transparent 85%);
             pointer-events: none;
             z-index: 1;
         }
 
-        /* Camada 2: Micro-Grid de Apoio (Tech Blueprint) */
         .bg-pattern-grid {
             position: fixed;
             inset: 0;
@@ -54,7 +47,6 @@
             z-index: 2;
         }
 
-        /* Camada 3: Textura de Grão Suave */
         .bg-noise {
             position: fixed;
             inset: 0;
@@ -64,18 +56,16 @@
             z-index: 3;
         }
 
-        /* Camada 4: Glows Atmosféricos e Vinheta */
         .bg-glows {
             position: fixed;
             inset: 0;
             background-image: 
-                radial-gradient(circle at 50% -10%, rgba(200, 155, 60, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 50% -10%, rgba(188, 19, 254, 0.15) 0%, transparent 60%),
                 radial-gradient(circle at 0% 100%, rgba(10, 200, 185, 0.04) 0%, transparent 40%);
             pointer-events: none;
             z-index: 4;
         }
 
-        /* Vinheta nas bordas para focar no centro */
         body::before {
             content: "";
             position: fixed;
@@ -92,7 +82,6 @@
         
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         
-        /* Glassmorphism Ultra-Refinado */
         .glass-card {
             background: rgba(8, 8, 8, 0.65);
             backdrop-filter: blur(20px) saturate(180%);
@@ -100,14 +89,13 @@
             box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.9);
         }
         
-        /* Scrollbar Invisível/Elegante */
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(200, 155, 60, 0.15); 
+            background: rgba(188, 19, 254, 0.15); 
             border-radius: 10px;
         }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
 
         @keyframes reveal {
             from { opacity: 0; transform: translateY(15px); filter: blur(8px); }

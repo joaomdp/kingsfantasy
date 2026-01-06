@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Champion, Role } from '../types';
 
@@ -8,12 +7,10 @@ interface ChampionSelectorProps {
   onClose: () => void;
 }
 
-// Lista estática dos principais campeões
 const CHAMPIONS_LIST = [
   "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "AurelionSol", "Azir", "Bard", "Belveth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn", "Camille", "Cassiopeia", "Chogath", "Corki", "Darius", "Diana", "DrMundo", "Draven", "Ekko", "Elise", "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia", "Ivern", "Janna", "JarvanIV", "Jax", "Jayce", "Jhin", "Jinx", "Kaisa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Khazix", "Kindred", "Kled", "KogMaw", "Leblanc", "LeeSin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "MasterYi", "Milio", "MissFortune", "Mordekaiser", "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne", "Nunu", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan", "Rammus", "RekSai", "Rell", "Renata", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "TahmKench", "Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "TwistedFate", "Twitch", "Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Velkoz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear", "Warwick", "Wukong", "Xayah", "Xerath", "XinZhao", "Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra"
 ];
 
-// Mapeamento simplificado de rotas para filtragem (Principais campeões de cada rota)
 const CHAMPION_ROLES: Record<string, string[]> = {
   [Role.TOP]: ["Aatrox", "Camille", "Darius", "Fiora", "Garen", "Gnar", "Gwen", "Illaoi", "Irelia", "Jax", "Kayle", "Kled", "Malphite", "Mordekaiser", "Nasus", "Olaf", "Ornn", "Pantheon", "Poppy", "Quinn", "Renekton", "Riven", "Rumble", "Sett", "Shen", "Singed", "Sion", "Teemo", "Tryndamere", "Urgot", "Volibear", "Yorick"],
   [Role.JNG]: ["Amumu", "Belveth", "Briar", "Diana", "DrMundo", "Ekko", "Elise", "Evelynn", "Fiddlesticks", "Gragas", "Graves", "Hecarim", "Ivern", "JarvanIV", "Karthus", "Kayn", "Khazix", "Kindred", "LeeSin", "Lillia", "MasterYi", "Nidalee", "Nocturne", "Nunu", "Rammus", "RekSai", "Rengar", "Sejuani", "Shaco", "Shyvana", "Skarner", "Trundle", "Udyr", "Vi", "Viego", "Warwick", "Wukong", "Zac"],
@@ -53,13 +50,13 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
       <div className="relative w-full max-w-5xl bg-[#070707] rounded-[40px] border border-white/10 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-500">
         
         {/* HEADER AREA */}
-        <div className="p-10 border-b border-white/5 bg-gradient-to-r from-[#c89b3c]/10 to-transparent shrink-0">
+        <div className="p-10 border-b border-white/5 bg-gradient-to-r from-[#bc13fe]/10 to-transparent shrink-0">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
             <div>
               <h2 className="font-orbitron font-black text-3xl text-white uppercase tracking-tight mb-2">ESCOLHER CAMPEÃO</h2>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">DEFININDO PARA:</span>
-                <span className="text-[10px] font-black text-[#c89b3c] uppercase tracking-widest">{playerName}</span>
+                <span className="text-[10px] font-black text-[#bc13fe] uppercase tracking-widest">{playerName}</span>
               </div>
             </div>
             
@@ -68,7 +65,7 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
               <input 
                 type="text" 
                 placeholder="BUSCAR CAMPEÃO..."
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-8 text-[11px] font-black text-white uppercase placeholder:text-gray-700 focus:outline-none focus:border-[#c89b3c]/40 transition-all shadow-inner"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-8 text-[11px] font-black text-white uppercase placeholder:text-gray-700 focus:outline-none focus:border-[#bc13fe]/40 transition-all shadow-inner"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
@@ -84,7 +81,7 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
                 onClick={() => setSelectedRole(filter.id as any)}
                 className={`flex items-center gap-3 px-6 py-3 rounded-xl border transition-all relative overflow-hidden group ${
                   selectedRole === filter.id 
-                    ? 'bg-[#c89b3c] border-[#c89b3c] text-black shadow-[0_0_20px_rgba(200,155,60,0.3)]' 
+                    ? 'bg-[#bc13fe] border-[#bc13fe] text-black shadow-[0_0_20px_rgba(188,19,254,0.3)]' 
                     : 'bg-white/5 border-white/5 text-gray-500 hover:text-white hover:border-white/10'
                 }`}
               >
@@ -108,7 +105,7 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
                 onClick={() => onSelect(champ)}
                 className="group flex flex-col items-center gap-4 transition-all active:scale-95"
               >
-                <div className="relative w-full aspect-square rounded-3xl overflow-hidden border-2 border-white/5 group-hover:border-[#c89b3c] transition-all duration-500 shadow-xl">
+                <div className="relative w-full aspect-square rounded-3xl overflow-hidden border-2 border-white/5 group-hover:border-[#bc13fe] transition-all duration-500 shadow-xl">
                   <img 
                     src={champ.image} 
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-115" 
@@ -136,7 +133,7 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
               </div>
               <button 
                 onClick={() => { setSearchTerm(''); setSelectedRole('ALL'); }}
-                className="text-[10px] font-black text-[#c89b3c] uppercase tracking-widest hover:underline"
+                className="text-[10px] font-black text-[#bc13fe] uppercase tracking-widest hover:underline"
               >
                 Limpar Filtros
               </button>

@@ -20,18 +20,18 @@ const Logo: React.FC = () => {
       <div className="relative h-16 md:h-20 flex items-center transition-all duration-500 group-hover:scale-105">
         {!hasError ? (
           <div className="relative h-full flex items-center">
-            <div className="absolute inset-0 bg-gold/10 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            <div className="absolute inset-0 bg-[#bc13fe]/10 blur-[40px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <img 
               src={logoUrl} 
               alt="Kings Lendas Fantasy Logo" 
-              className="relative z-10 h-full w-auto object-contain transition-all duration-500 drop-shadow-[0_0_15px_rgba(200,155,60,0.25)] group-hover:drop-shadow-[0_0_25px_rgba(200,155,60,0.45)]"
+              className="relative z-10 h-full w-auto object-contain transition-all duration-500 drop-shadow-[0_0_15px_rgba(188,19,254,0.25)] group-hover:drop-shadow-[0_0_25px_rgba(188,19,254,0.45)] invert-[0.1] sepia-[1] saturate-[5] hue-rotate-[240deg]"
               onError={() => setHasError(true)}
             />
           </div>
         ) : (
           <div className="flex flex-col">
-            <span className="font-orbitron font-black text-white text-2xl tracking-tighter leading-none group-hover:text-gold transition-colors uppercase">KINGS LENDAS</span>
-            <span className="text-[11px] font-black text-gold tracking-[0.1em] uppercase">FANTASY</span>
+            <span className="font-orbitron font-black text-white text-2xl tracking-tighter leading-none group-hover:text-[#bc13fe] transition-colors uppercase">KINGS LENDAS</span>
+            <span className="text-[11px] font-black text-[#bc13fe] tracking-[0.1em] uppercase">FANTASY</span>
           </div>
         )}
       </div>
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank,
               onClick={() => onNavigate(item.id)}
               className={`h-full px-7 flex items-center justify-center text-[13px] font-black uppercase tracking-[0.1em] transition-all duration-300 ${
                 activePage === item.id 
-                  ? 'text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]' 
+                  ? 'text-white drop-shadow-[0_0_8px_rgba(188,19,254,0.3)]' 
                   : 'text-gray-500 hover:text-gray-200'
               }`}
             >
@@ -77,13 +77,13 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank,
 
         <div className="flex items-center gap-10">
           <div className="hidden xl:flex flex-col text-right border-r border-white/10 pr-10">
-             <span className="text-[10px] font-black text-gold tracking-wider uppercase">
-               {dbConnected ? 'CONEXÃO ATIVA' : 'MODO OFFLINE'}
+             <span className={`text-[10px] font-black tracking-wider uppercase ${dbConnected ? 'text-[#bc13fe]' : 'text-red-500'}`}>
+               {dbConnected ? 'MERCADO ABERTO' : 'MERCADO FECHADO'}
              </span>
              <div className="flex items-center justify-end gap-1.5 mt-1.5">
                 <span className={`w-2 h-2 rounded-full animate-pulse shadow-lg ${dbConnected ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`}></span>
                 <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight">
-                  {dbConnected ? 'Database Sync' : 'Reconectando...'}
+                  {dbConnected ? 'Faça sua escalação' : 'Rodada em andamento'}
                 </span>
              </div>
           </div>
@@ -95,16 +95,16 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank,
              <div className="relative shrink-0">
                <img 
                  src={avatar} 
-                 className={`w-11 h-11 rounded-xl object-cover border-2 transition-all ${activePage === 'profile' ? 'border-gold shadow-[0_0_20px_rgba(200,155,60,0.4)]' : 'border-white/10 group-hover:border-gold/50'}`} 
+                 className={`w-11 h-11 rounded-xl object-cover border-2 transition-all ${activePage === 'profile' ? 'border-[#bc13fe] shadow-[0_0_20px_rgba(188,19,254,0.4)]' : 'border-white/10 group-hover:border-[#bc13fe]/50'}`} 
                  alt="Avatar" 
                />
                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-black rounded-full shadow-lg"></div>
              </div>
              <div className="hidden sm:block text-left">
-                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none mb-1 group-hover:text-gold transition-colors">{userName}</p>
+                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none mb-1 group-hover:text-[#bc13fe] transition-colors">{userName}</p>
                 <div className="flex items-center gap-1.5">
-                  <i className="fa-solid fa-medal text-[9px] text-gold/80"></i>
-                  <span className="text-[10px] text-gold font-black uppercase tracking-widest">{rank}</span>
+                  <i className="fa-solid fa-medal text-[9px] text-[#bc13fe]/80"></i>
+                  <span className="text-[10px] text-[#bc13fe] font-black uppercase tracking-widest">{rank}</span>
                 </div>
              </div>
           </div>

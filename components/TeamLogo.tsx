@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface TeamLogoProps {
@@ -15,17 +14,17 @@ const TeamLogo: React.FC<TeamLogoProps> = ({ logoUrl, teamName, className = "w-5
   };
 
   return (
-    <div className={`${className} flex items-center justify-center overflow-hidden`}>
+    <div className={`${className} flex items-center justify-center relative`}>
       {!hasError ? (
         <img 
           src={logoUrl} 
           alt={teamName}
-          className="max-w-full max-h-full object-contain transition-all duration-500"
+          className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 brightness-110 contrast-110"
           onError={() => setHasError(true)}
         />
       ) : (
-        <div className="w-full h-full rounded bg-[#c89b3c]/10 border border-[#c89b3c]/30 flex items-center justify-center">
-          <span className="text-[8px] font-black text-[#c89b3c]">{getInitials(teamName)}</span>
+        <div className="relative z-10 w-full h-full rounded-full bg-[#bc13fe]/10 border border-[#bc13fe]/30 flex items-center justify-center">
+          <span className="text-[10px] font-black text-[#bc13fe]">{getInitials(teamName)}</span>
         </div>
       )}
     </div>

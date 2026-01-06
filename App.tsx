@@ -17,14 +17,14 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [players, setPlayers] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDbConnected, setIsDbConnected] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'connected' | 'offline' | 'loading'>('loading');
 
   const [userTeam, setUserTeam] = useState<UserTeam>({
     id: 'u1',
     userId: 'current-user',
     userName: 'HAKKAI',
     name: 'GOATEAM',
-    avatar: 'https://picsum.photos/seed/user/100',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hakkai',
     rank: 'PLATINA I',
     level: 42,
     honor: 3,
@@ -43,30 +43,27 @@ const App: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true);
+        setDbStatus('loading');
         const data = await DataService.getPlayers();
         
         if (data && data.length > 0) {
           setPlayers(data);
-          setIsDbConnected(true);
+          setDbStatus('connected');
         } else {
+          // Se não houver dados no banco, usa os mocks mas avisa que está offline/mock
           setPlayers(MOCK_PLAYERS);
-          setIsDbConnected(false);
+          setDbStatus('offline');
         }
       } catch (error) {
         setPlayers(MOCK_PLAYERS);
-        setIsDbConnected(false);
+        setDbStatus('offline');
       } finally {
-        setTimeout(() => setIsLoading(false), 1500);
+        setTimeout(() => setIsLoading(false), 1200);
       }
     };
 
     fetchData();
   }, []);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [currentPage]);
 
   const handleOpenChampionSelector = (player: Player) => {
     const currentPlayerInRole = userTeam.players[player.role];
@@ -114,29 +111,6 @@ const App: React.FC = () => {
     DataService.saveUserTeam(updatedTeam);
   };
 
-  const handleClearLineup = () => {
-    if (Object.keys(userTeam.players).length === 0) return;
-    if (window.confirm("Deseja realmente limpar toda a sua escalação?")) {
-      const resetTeam = {
-        ...userTeam,
-        budget: INITIAL_BUDGET,
-        players: {},
-      };
-      setUserTeam(resetTeam);
-      DataService.saveUserTeam(resetTeam);
-    }
-  };
-
-  const handleConfirmLineup = () => {
-    const hiredCount = Object.values(userTeam.players).filter(p => !!p).length;
-    if (hiredCount < 5) {
-      alert("Sua escalação ainda não está completa!");
-      return;
-    }
-    alert("Escalação confirmada com sucesso! Boa sorte na rodada.");
-    setCurrentPage('dashboard');
-  };
-
   const handleUpdateProfile = (data: Partial<UserTeam>) => {
     const updated = { ...userTeam, ...data };
     setUserTeam(updated);
@@ -163,8 +137,8 @@ const App: React.FC = () => {
             userTeam={userTeam} 
             onHire={handleOpenChampionSelector} 
             onFire={handleFirePlayer} 
-            onClear={handleClearLineup}
-            onConfirm={handleConfirmLineup}
+            onClear={() => setUserTeam({...userTeam, budget: INITIAL_BUDGET, players: {}})}
+            onConfirm={() => { alert("Time confirmado!"); setCurrentPage('dashboard'); }}
           />
         );
       case 'squad':
@@ -196,10 +170,27 @@ const App: React.FC = () => {
         userName={userTeam.userName}
         rank={userTeam.rank}
         avatar={userTeam.avatar}
-        dbConnected={isDbConnected}
+        dbConnected={dbStatus === 'connected'}
       />
       
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-6 md:px-12 py-12">
+        {dbStatus === 'offline' && (
+          <div className="mb-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <i className="fa-solid fa-triangle-exclamation text-yellow-500"></i>
+              <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">
+                Exibindo jogadores de demonstração. Conecte seu Supabase para ver dados reais.
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-1.5 bg-yellow-500 text-black text-[9px] font-black rounded-lg uppercase tracking-widest hover:scale-105 transition-transform"
+            >
+              Recarregar
+            </button>
+          </div>
+        )}
+        
         <div key={currentPage} className="page-transition-container">
           {renderPage()}
         </div>
@@ -207,15 +198,8 @@ const App: React.FC = () => {
 
       <footer className="py-20 border-t border-white/5 text-center bg-black/60 backdrop-blur-md">
         <div className="max-w-[1440px] mx-auto px-8">
-          <div className="flex flex-wrap justify-center gap-12 mb-10 font-black text-gray-500 text-xs tracking-[0.1em] uppercase">
-            <a href="#" className="hover:text-gold transition-colors">Regras</a>
-            <a href="#" className="hover:text-gold transition-colors">Privacidade</a>
-            <a href="#" className="hover:text-gold transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-gold transition-colors">Suporte</a>
-          </div>
-          <p className="text-[11px] text-gray-700 max-w-3xl mx-auto leading-loose font-medium">
-            O KINGS LENDAS FANTASY É OPERADO DE FORMA INDEPENDENTE. 
-            © 2026 KINGS LENDAS. LEAGUE OF LEGENDS E MARCAS ASSOCIADAS SÃO PROPRIEDADES DA RIOT GAMES, INC.
+          <p className="text-[11px] text-gray-700 max-w-3xl mx-auto leading-loose font-medium uppercase tracking-widest">
+            © 2026 KINGS LENDAS FANTASY • SISTEMA SINCRONIZADO VIA SUPABASE CLOUD
           </p>
         </div>
       </footer>

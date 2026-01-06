@@ -59,10 +59,16 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
 
   const hiredCount = Object.values(userTeam.players).filter(p => !!p).length;
 
+  const teamValue = useMemo(() => {
+    return Object.values(userTeam.players)
+      .filter((p): p is Player => !!p)
+      .reduce((sum, p) => sum + p.price, 0);
+  }, [userTeam.players]);
+
   const PaiCoin = ({ size = "sm" }: { size?: "xs" | "sm" | "md" }) => (
     <img 
       src="https://i.imgur.com/4odZyzF.png" 
-      className={`${size === "xs" ? "w-3.5 h-3.5" : size === "sm" ? "w-4 h-4" : "w-6 h-6"} object-contain`} 
+      className={`${size === "xs" ? "w-3.5 h-3.5" : size === "sm" ? "w-4 h-4" : "w-6 h-6"} object-contain invert-[0.1] sepia-[1] saturate-[5] hue-rotate-[240deg]`} 
       alt="P" 
     />
   );
@@ -78,20 +84,31 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
           {/* BUDGET HUD */}
           <div className="glass-card rounded-[32px] p-7 border border-white/5 bg-black/40 shadow-2xl relative overflow-hidden">
             <div className="relative z-10 space-y-8">
-              <div>
-                <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-2.5">SALDO DISPONÍVEL</span>
-                <div className="flex items-center gap-3">
-                  <PaiCoin size="md" />
-                  <span className="text-3xl font-orbitron font-black text-white">{formatValue(userTeam.budget)}</span>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-2.5">SALDO DISPONÍVEL</span>
+                  <div className="flex items-center gap-3">
+                    <PaiCoin size="md" />
+                    <span className="text-3xl font-orbitron font-black text-white">{formatValue(userTeam.budget)}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-6 border-t border-white/5">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] block mb-2.5">VALOR DO ELENCO</span>
+                  <div className="flex items-center gap-3">
+                    <PaiCoin size="md" />
+                    <span className="text-3xl font-orbitron font-black text-white">{formatValue(teamValue)}</span>
+                  </div>
                 </div>
               </div>
+
               <div className="pt-6 border-t border-white/5">
                 <div className="flex justify-between items-end mb-3">
                   <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">LINEUP ATUAL</span>
-                  <span className="text-xl font-orbitron font-black text-[#c89b3c]">{hiredCount}/5</span>
+                  <span className="text-xl font-orbitron font-black text-[#bc13fe]">{hiredCount}/5</span>
                 </div>
                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#c89b3c] transition-all duration-1000" style={{ width: `${(hiredCount/5)*100}%` }}></div>
+                  <div className="h-full bg-[#bc13fe] transition-all duration-1000" style={{ width: `${(hiredCount/5)*100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -107,7 +124,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                   <div 
                     onClick={() => p ? setHistoryPlayer(p) : setFilterRole(role.id as any)}
                     className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-500 overflow-hidden cursor-pointer
-                      ${p ? 'border-[#c89b3c] bg-black shadow-[0_0_15px_rgba(200,155,60,0.8)]' : 'border-white/20 bg-black/60 opacity-60'}`}
+                      ${p ? 'border-[#bc13fe] bg-black shadow-[0_0_15px_rgba(188,19,254,0.8)]' : 'border-white/20 bg-black/60 opacity-60'}`}
                   >
                     {p ? <PlayerImage player={p} className="w-full h-full" /> : <img src={roleMetadata[role.id].icon} className="w-4 h-4 brightness-200 opacity-30" alt="" />}
                   </div>
@@ -116,7 +133,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
             })}
           </div>
 
-          {/* MINHA ESCALAÇÃO HUD - AJUSTADO PARA TAMANHO EQUILIBRADO */}
+          {/* MINHA ESCALAÇÃO HUD - COM NOMES ABAIXO DA IMAGEM */}
           <div className="space-y-4">
             <span className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] block px-2">MINHA ESCALAÇÃO</span>
             <div className="grid grid-cols-5 gap-3">
@@ -124,24 +141,30 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                 const player = userTeam.players[role];
                 const champ = player?.selectedChampion || player?.lastChampion;
                 return (
-                  <div key={role} className={`aspect-square rounded-xl border transition-all duration-500 relative overflow-visible group ${player ? 'border-[#c89b3c] bg-black shadow-[0_0_15px_rgba(200,155,60,0.1)]' : 'border-white/5 bg-white/[0.02]'}`}>
-                    {player ? (
-                      <>
-                        <div className="w-full h-full p-0.5 cursor-pointer rounded-xl overflow-hidden relative" onClick={() => setHistoryPlayer(player)}>
-                          <PlayerImage player={player} className="w-full h-full rounded-lg" />
-                        </div>
-                        {champ && (
-                          <div className="absolute -bottom-1.5 -right-1.5 w-9 h-9 rounded-full border-2 border-black bg-black overflow-hidden shadow-[0_4px_8px_rgba(0,0,0,0.8)] z-30 group-hover:scale-110 transition-transform duration-300">
-                            <div className="absolute inset-0 border border-[#c89b3c]/40 rounded-full z-10 pointer-events-none"></div>
-                            <img src={champ.image} className="w-full h-full object-cover" alt="" />
+                  <div key={role} className="flex flex-col gap-1.5 items-center">
+                    <div className={`aspect-square w-full rounded-xl border transition-all duration-500 relative overflow-visible group ${player ? 'border-[#bc13fe] bg-black shadow-[0_0_15px_rgba(188,19,254,0.1)]' : 'border-white/5 bg-white/[0.02]'}`}>
+                      {player ? (
+                        <>
+                          <div className="w-full h-full p-0.5 cursor-pointer rounded-xl overflow-hidden relative" onClick={() => setHistoryPlayer(player)}>
+                            <PlayerImage player={player} className="w-full h-full rounded-lg" />
                           </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center opacity-10">
-                        <img src={roleMetadata[role].icon} className="w-4 h-4 brightness-0 invert" alt="" />
-                      </div>
-                    )}
+                          {champ && (
+                            <div className="absolute -bottom-1.5 -right-1.5 w-9 h-9 rounded-full border-2 border-black bg-black overflow-hidden shadow-[0_4px_8px_rgba(0,0,0,0.8)] z-30 group-hover:scale-110 transition-transform duration-300">
+                              <div className="absolute inset-0 border border-[#bc13fe]/40 rounded-full z-10 pointer-events-none"></div>
+                              <img src={champ.image} className="w-full h-full object-cover" alt="" />
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-10">
+                          <img src={roleMetadata[role].icon} className="w-4 h-4 brightness-0 invert" alt="" />
+                        </div>
+                      )}
+                    </div>
+                    {/* NOME DO PLAYER OU ROTA */}
+                    <span className={`text-[7px] font-black text-center uppercase tracking-tighter truncate w-full ${player ? 'text-[#bc13fe] drop-shadow-[0_0_3px_rgba(188,19,254,0.4)]' : 'text-gray-700'}`}>
+                      {player ? player.name : roleMetadata[role].label}
+                    </span>
                   </div>
                 );
               })}
@@ -158,7 +181,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                 onClick={onConfirm}
                 disabled={hiredCount < 5}
                 className={`flex-1 h-14 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all relative overflow-hidden group/confirm shadow-2xl
-                  ${hiredCount === 5 ? 'bg-[#c89b3c] text-black hover:scale-[1.02] active:scale-[0.98]' : 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed'}`}
+                  ${hiredCount === 5 ? 'bg-[#bc13fe] text-black hover:scale-[1.02] active:scale-[0.98]' : 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed'}`}
               >
                 {hiredCount === 5 ? 'CONFIRMAR TIME' : `FALTAM ${5 - hiredCount}`}
               </button>
@@ -176,7 +199,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
             <div className="absolute inset-0 bg-black/30 backdrop-blur-xl border border-white/5 rounded-3xl -z-10"></div>
             <div className="flex items-center gap-2 p-1 bg-white/[0.02] rounded-[1.25rem] border border-white/5 overflow-x-auto no-scrollbar">
               {Object.entries(roleMetadata).map(([key, data]) => (
-                <button key={key} onClick={() => setFilterRole(key as any)} className={`flex-1 flex items-center justify-center gap-3 px-5 py-3 rounded-xl transition-all relative group ${filterRole === key ? 'bg-[#c89b3c]/10 text-white border border-[#c89b3c]/40' : 'text-gray-600 hover:text-gray-300'}`}>
+                <button key={key} onClick={() => setFilterRole(key as any)} className={`flex-1 flex items-center justify-center gap-3 px-5 py-3 rounded-xl transition-all relative group ${filterRole === key ? 'bg-[#bc13fe]/10 text-white border border-[#bc13fe]/40' : 'text-gray-600 hover:text-gray-300'}`}>
                   <img src={data.icon} className={`w-3.5 h-3.5 transition-all ${filterRole === key ? 'brightness-150 drop-shadow-[0_0_5px_#fff]' : 'brightness-50 opacity-30 group-hover:opacity-100'}`} alt="" />
                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">{data.label}</span>
                 </button>
@@ -195,7 +218,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
           </div>
         </div>
 
-        {/* PLAYER LIST - AJUSTADO POSIÇÃO CAMPEÃO NO CARD */}
+        {/* PLAYER LIST */}
         <div className={`space-y-4 transition-all duration-300 ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
           {filteredPlayers.map((player) => {
             const hiredPlayer = userTeam.players[player.role];
@@ -204,7 +227,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
             const displayChamp = isHired ? (hiredPlayer.selectedChampion || hiredPlayer.lastChampion) : null;
 
             return (
-              <div key={player.id} className={`relative group bg-[#0a0a0a] rounded-[2rem] border transition-all duration-500 overflow-hidden shadow-2xl ${isHired ? 'border-[#c89b3c]/60 shadow-[0_0_30px_rgba(200,155,60,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
+              <div key={player.id} className={`relative group bg-[#0a0a0a] rounded-[2rem] border transition-all duration-500 overflow-hidden shadow-2xl ${isHired ? 'border-[#bc13fe]/60 shadow-[0_0_30px_rgba(188,19,254,0.1)]' : 'border-white/5 hover:border-white/20'}`}>
                 <div className="flex flex-col md:flex-row items-stretch">
                   <div className="relative w-full md:w-36 h-40 md:h-auto shrink-0 cursor-pointer overflow-hidden" style={{ clipPath: 'polygon(0 0, 100% 0, 85% 100%, 0% 100%)' }} onClick={() => setHistoryPlayer(player)}>
                     <PlayerImage player={player} className="w-full h-full grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110" />
@@ -213,13 +236,14 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                       <div className="absolute bottom-4 right-6 z-20 group-hover:scale-110 transition-transform duration-500">
                          <div className="relative w-14 h-14">
                             <img src={displayChamp.image} className="w-full h-full rounded-full border-4 border-black bg-black object-cover shadow-[0_0_20px_rgba(0,0,0,0.8)]" alt="" />
-                            <div className="absolute inset-0 rounded-full border-2 border-[#c89b3c]/40 animate-pulse"></div>
+                            <div className="absolute inset-0 rounded-full border-2 border-[#bc13fe]/40 animate-pulse"></div>
                          </div>
                       </div>
                     )}
 
-                    <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-xl p-2 rounded-xl border border-white/10">
-                       <TeamLogo logoUrl={player.teamLogo} teamName={player.team} className="w-4 h-4 brightness-150" />
+                    {/* Team Logo Badge */}
+                    <div className="absolute top-2.5 left-2.5 z-20 transition-transform duration-300 group-hover:scale-110">
+                       <TeamLogo logoUrl={player.teamLogo} teamName={player.team} className="w-8 h-8" />
                     </div>
                   </div>
 
@@ -229,11 +253,11 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                         <img src={roleMetadata[player.role].icon} className="w-3.5 h-3.5 brightness-200 opacity-40" alt="" />
                         <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">{player.team}</span>
                       </div>
-                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none group-hover:text-[#c89b3c] transition-colors">{player.name}</h3>
+                      <h3 className="text-3xl font-black text-white uppercase tracking-tighter leading-none group-hover:text-[#bc13fe] transition-colors">{player.name}</h3>
                     </div>
                     <div className="flex items-center gap-10">
                       <div>
-                        <div className="flex items-end gap-1.5 mb-1"><span className="text-2xl font-black text-white font-orbitron tracking-tighter leading-none">{player.avgPoints.toFixed(1)}</span><span className="text-[10px] font-black text-[#c89b3c] mb-0.5">PTS</span></div>
+                        <div className="flex items-end gap-1.5 mb-1"><span className="text-2xl font-black text-white font-orbitron tracking-tighter leading-none">{player.avgPoints.toFixed(1)}</span><span className="text-[10px] font-black text-[#bc13fe] mb-0.5">PTS</span></div>
                         <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">MÉDIA SEASON</span>
                       </div>
                       <div>
@@ -243,7 +267,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                     </div>
                   </div>
 
-                  <div className={`w-full md:w-56 shrink-0 flex flex-col justify-between p-6 md:p-8 md:border-l border-white/5 transition-colors ${isHired ? 'bg-[#7a2f2f]/10' : 'bg-white/[0.02] group-hover:bg-[#c89b3c]/[0.03]'}`}>
+                  <div className={`w-full md:w-56 shrink-0 flex flex-col justify-between p-6 md:p-8 md:border-l border-white/5 transition-colors ${isHired ? 'bg-[#bc13fe]/10' : 'bg-white/[0.02] group-hover:bg-[#bc13fe]/[0.03]'}`}>
                     <div className="text-right">
                       <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">VALOR MERCADO</span>
                       <div className="flex items-center justify-end gap-2">
@@ -251,7 +275,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
                         <span className={`text-2xl font-black font-orbitron tracking-tighter leading-none ${!canAfford && !isHired ? 'text-red-500' : 'text-white'}`}>{formatValue(player.price)}</span>
                       </div>
                     </div>
-                    <button onClick={() => isHired ? onFire(player.role) : onHire(player)} disabled={!canAfford} className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${isHired ? 'border border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white' : !canAfford ? 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50' : 'bg-[#c89b3c] text-black hover:scale-[1.02] shadow-xl shadow-[#c89b3c]/10'}`}>
+                    <button onClick={() => isHired ? onFire(player.role) : onHire(player)} disabled={!canAfford} className={`w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all ${isHired ? 'border border-red-500/40 text-red-500 hover:bg-red-500 hover:text-white' : !canAfford ? 'bg-gray-800 text-gray-600 cursor-not-allowed opacity-50' : 'bg-[#bc13fe] text-black hover:scale-[1.02] shadow-xl shadow-[#bc13fe]/10'}`}>
                       {isHired ? 'DISPENSAR' : !canAfford ? 'SEM SALDO' : 'ESCALAR'}
                     </button>
                   </div>

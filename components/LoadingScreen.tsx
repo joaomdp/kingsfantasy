@@ -4,43 +4,49 @@ import React from 'react';
 const LoadingScreen: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[1000] bg-[#020202] flex flex-col items-center justify-center overflow-hidden">
-      <div className="bg-pattern-halftone absolute inset-0 opacity-20"></div>
+      {/* Background Patterns for continuity */}
+      <div className="bg-pattern-halftone absolute inset-0 opacity-10"></div>
+      <div className="bg-pattern-grid absolute inset-0 opacity-5"></div>
       
-      <div className="relative">
-        {/* Hextech Spinner */}
-        <div className="w-32 h-32 relative">
-          <div className="absolute inset-0 border-4 border-[#c89b3c]/10 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-t-[#c89b3c] rounded-full animate-spin"></div>
-          <div className="absolute inset-4 border-2 border-b-cyan-500/50 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
-          
-          <div className="absolute inset-0 flex items-center justify-center">
-             <img 
-               src="https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/logo.png" 
-               className="w-12 h-12 object-contain animate-pulse" 
-               alt="Logo" 
-             />
-          </div>
+      <div className="relative flex flex-col items-center">
+        {/* Logo Container with Glow */}
+        <div className="relative group mb-12">
+          <div className="absolute inset-0 bg-[#bc13fe]/20 blur-[60px] rounded-full animate-pulse"></div>
+          <img 
+            src="https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/logo.png" 
+            className="relative z-10 w-24 h-24 md:w-32 md:h-32 object-contain invert-[0.1] sepia-[1] saturate-[5] hue-rotate-[240deg] drop-shadow-[0_0_20px_rgba(188,19,254,0.4)]" 
+            alt="Kings Lendas Logo" 
+          />
         </div>
 
-        {/* Scan line effect */}
-        <div className="absolute -inset-10 pointer-events-none">
-          <div className="w-full h-px bg-cyan-500/20 blur-sm animate-[scan_2s_ease-in-out_infinite]"></div>
+        {/* Text and Simple Loader */}
+        <div className="text-center space-y-6 relative z-10">
+          <div className="flex flex-col items-center">
+            <h2 className="font-orbitron font-black text-white text-xl md:text-2xl tracking-[0.4em] uppercase opacity-90">
+              KINGS <span className="text-[#bc13fe]">LENDAS</span>
+            </h2>
+            <div className="flex items-center gap-1 mt-2">
+               <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.3em]">Carregando</span>
+               <span className="flex gap-1">
+                 <span className="w-0.5 h-0.5 bg-[#bc13fe] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                 <span className="w-0.5 h-0.5 bg-[#bc13fe] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                 <span className="w-0.5 h-0.5 bg-[#bc13fe] rounded-full animate-bounce"></span>
+               </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-12 text-center space-y-4 relative z-10">
-        <h2 className="font-orbitron font-black text-white text-xl tracking-[0.3em] uppercase">Sincronizando Dados</h2>
-        <div className="flex items-center justify-center gap-1.5">
-          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></div>
-          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Conectando ao Kings-DB-01</span>
-        </div>
+      {/* Modern Slim Progress Bar at Bottom */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5">
+        <div className="h-full bg-[#bc13fe] shadow-[0_0_15px_#bc13fe] animate-[progress_2s_ease-in-out_infinite]"></div>
       </div>
 
       <style>{`
-        @keyframes scan {
-          0% { transform: translateY(0); opacity: 0; }
-          50% { opacity: 1; }
-          100% { transform: translateY(200px); opacity: 0; }
+        @keyframes progress {
+          0% { width: 0%; left: 0%; }
+          50% { width: 30%; left: 35%; }
+          100% { width: 0%; left: 100%; }
         }
       `}</style>
     </div>
