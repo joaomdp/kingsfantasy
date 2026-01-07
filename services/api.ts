@@ -1,78 +1,113 @@
 
-import { Player, UserTeam } from '../types';
-import { MOCK_PLAYERS } from '../constants';
+import { Player, UserTeam, Role } from '../types';
 
+/**
+ * CONFIGURAÇÃO DO BACKEND
+ * Cole sua 'anon public' key aqui para que o site conecte automaticamente para todos.
+ */
 const SUPABASE_URL = 'https://xfkjdzeclvdyjxjpllbb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhma2pkemVjbHZkeWp4anBsbGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDUzMDUsImV4cCI6MjA4MzIyMTMwNX0.szByBteMU7eQEj4so-4L4jWWgrhB2f5JU82oludfZfc'; 
+// Explicitly typed as string to prevent literal type inference and subsequent 'never' type error when checking length
+const SUPABASE_ANON_KEY: string = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhma2pkemVjbHZkeWp4anBsbGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDUzMDUsImV4cCI6MjA4MzIyMTMwNX0.szByBteMU7eQEj4so-4L4jWWgrhB2f5JU82oludfZfc'; // <--- COLE SUA CHAVE AQUI (Começa com 'ey...')
+
+// Função para obter a chave ativa
+const getActiveKey = () => {
+  // 1. Tenta a chave hardcoded acima
+  if (SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 20) return SUPABASE_ANON_KEY;
+  // 2. Tenta localStorage (fallback para testes do dev)
+  const localKey = localStorage.getItem('supabase_anon_key');
+  if (localKey) return localKey;
+  // 3. Tenta variável de ambiente
+  return process.env.SUPABASE_ANON_KEY || '';
+};
 
 export const DataService = {
-  /**
-   * Helper para gerar a URL pública de um arquivo no Supabase Storage.
-   * Certifique-se de que o bucket está definido como PUBLIC no painel do Supabase.
-   */
   getStorageUrl(bucket: 'players' | 'teams' | 'avatars', path: string): string {
-    if (!path) return '';
-    // Se já for uma URL completa, não altera
+    if (!path || !SUPABASE_URL) return '';
     if (path.startsWith('http')) return path;
-    
-    // Remove possíveis barras iniciais para evitar URLs malformadas
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    const url = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
-    
-    return url;
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
   },
 
-  /**
-   * Busca jogadores convertendo caminhos do banco em URLs do Storage.
-   * Se a tabela 'players' não existir ou estiver vazia, retorna array vazio.
-   */
-  async getPlayers(): Promise<Player[]> {
+  // Método para o desenvolvedor setar a chave via console se necessário
+  setDevKey(key: string) {
+    localStorage.setItem('supabase_anon_key', key);
+    window.location.reload();
+  },
+
+  // Added setLocalKey method to fix the missing property error in App.tsx
+  setLocalKey(key: string) {
+    localStorage.setItem('supabase_anon_key', key);
+  },
+
+  async checkConnection(): Promise<{ok: boolean, error?: string}> {
+    const key = getActiveKey();
+    if (!key) return { ok: false, error: 'Chave não configurada' };
+
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/players?select=*,team:teams(*)`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/players?select=id&limit=1`, {
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+      });
+      return { ok: res.ok };
+    } catch (e) {
+      return { ok: false, error: 'Erro de rede' };
+    }
+  },
+
+  async getPlayers(): Promise<Player[]> {
+    const key = getActiveKey();
+    if (!key) return [];
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/players?select=*,teams(*)`, {
         headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
           'Content-Type': 'application/json'
         }
       });
 
-      if (!response.ok) {
-        console.warn("API Supabase retornou erro. Verifique se as tabelas 'players' e 'teams' existem.");
-        return [];
-      }
+      if (!response.ok) return [];
       
-      const data = await response.json();
-      
-      if (!data || data.length === 0) {
-        console.info("Nenhum jogador encontrado na tabela 'players'. Usando dados locais.");
-        return [];
-      }
-      
-      return data.map((item: any) => ({
-        id: item.id?.toString() || Math.random().toString(),
-        name: item.name,
-        role: item.role,
-        team: item.team?.name || 'Sem Time',
-        teamLogo: this.getStorageUrl('teams', item.team?.logo_url || ''),
-        price: Number(item.price) || 0,
-        points: Number(item.points) || 0,
-        avgPoints: Number(item.avg_points) || 0,
-        kda: item.kda || '0.0',
-        image: this.getStorageUrl('players', item.image)
-      }));
+      const rawData = await response.json();
+      if (!Array.isArray(rawData)) return [];
+
+      return rawData.map((item: any) => {
+        const teamData = item.teams || item.team || {};
+        
+        let mappedRole = Role.TOP;
+        const dbRole = (item.role || 'TOP').toUpperCase();
+        if (dbRole.includes('JNG') || dbRole.includes('JUNGLE')) mappedRole = Role.JNG;
+        else if (dbRole.includes('MID')) mappedRole = Role.MID;
+        else if (dbRole.includes('ADC') || dbRole.includes('BOT')) mappedRole = Role.ADC;
+        else if (dbRole.includes('SUP') || dbRole.includes('SUPORTE')) mappedRole = Role.SUP;
+
+        return {
+          id: item.id.toString(),
+          name: item.name || 'Invocador',
+          role: mappedRole,
+          price: Number(item.price || 0),
+          points: Number(item.points || 0),
+          avgPoints: Number(item.avg_points || 0),
+          kda: item.kda || '0.0',
+          image: this.getStorageUrl('players', item.image || ''),
+          team: teamData.name || 'Sem Time',
+          teamLogo: this.getStorageUrl('teams', teamData.logo_url || teamData.logo || '')
+        };
+      });
     } catch (error) {
-      console.error("Erro crítico de conexão com Supabase:", error);
       return [];
     }
   },
 
   async saveUserTeam(team: UserTeam): Promise<boolean> {
+    const key = getActiveKey();
+    if (!key) return false;
     try {
       const response = await fetch(`${SUPABASE_URL}/rest/v1/user_teams`, {
         method: 'POST',
         headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': key,
+          'Authorization': `Bearer ${key}`,
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates'
         },
@@ -81,8 +116,7 @@ export const DataService = {
           team_name: team.name,
           budget: team.budget,
           total_points: team.totalPoints,
-          lineup: team.players,
-          avatar_url: team.avatar
+          lineup: team.players
         })
       });
       return response.ok;

@@ -1,21 +1,26 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kings Lendas Fantasy | Purple Edition</title>
+    <title>Kings Lendas Fantasy | Ilha Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent-color: #bc13fe;
-            --bg-deep: #020202;
+            /* Nova Paleta Ilha das Lendas */
+            --accent-color: #5E6CFF;
+            --bg-top: #0B0411;
+            --bg-mid: #3A2380;
+            --bg-base: #3E46C1;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
+            background: linear-gradient(to bottom, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-base) 100%);
+            background-attachment: fixed;
             color: #f0f0f0;
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
@@ -26,10 +31,10 @@
         .bg-pattern-halftone {
             position: fixed;
             inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 0);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 0);
             background-size: 20px 20px;
-            mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.7) 40%, transparent 85%);
-            -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.7) 40%, transparent 85%);
+            mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0,0,0,0.5) 40%, transparent 100%);
             pointer-events: none;
             z-index: 1;
         }
@@ -47,21 +52,23 @@
             z-index: 2;
         }
 
+        /* Camada de Ruído / Poeira Estelar */
         .bg-noise {
             position: fixed;
             inset: 0;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            opacity: 0.025;
+            opacity: 0.04;
             pointer-events: none;
             z-index: 3;
+            mix-blend-mode: overlay;
         }
 
         .bg-glows {
             position: fixed;
             inset: 0;
             background-image: 
-                radial-gradient(circle at 50% -10%, rgba(188, 19, 254, 0.15) 0%, transparent 60%),
-                radial-gradient(circle at 0% 100%, rgba(10, 200, 185, 0.04) 0%, transparent 40%);
+                radial-gradient(circle at 50% -10%, rgba(94, 108, 255, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 100% 100%, rgba(62, 70, 193, 0.3) 0%, transparent 50%);
             pointer-events: none;
             z-index: 4;
         }
@@ -70,7 +77,7 @@
             content: "";
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
             pointer-events: none;
             z-index: 5;
         }
@@ -83,16 +90,16 @@
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         
         .glass-card {
-            background: rgba(8, 8, 8, 0.65);
-            backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.9);
+            background: rgba(11, 4, 17, 0.6);
+            backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.5);
         }
         
-        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
-            background: rgba(188, 19, 254, 0.15); 
+            background: rgba(94, 108, 255, 0.3); 
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }

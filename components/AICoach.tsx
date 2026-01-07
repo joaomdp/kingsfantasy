@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { UserTeam, Player } from '../types';
@@ -51,10 +52,10 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
     <div className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-250px)]">
       <div className="flex-1 overflow-y-auto mb-6 space-y-4 pr-2 custom-scrollbar">
         <div className="flex gap-4">
-          <div className="w-12 h-12 bg-[#bc13fe]/10 rounded-full flex items-center justify-center border border-[#bc13fe]/30 shrink-0">
-            <i className="fa-solid fa-robot text-[#bc13fe] text-xl"></i>
+          <div className="w-12 h-12 bg-[#5E6CFF]/10 rounded-full flex items-center justify-center border border-[#5E6CFF]/30 shrink-0">
+            <i className="fa-solid fa-robot text-[#5E6CFF] text-xl shadow-[0_0_15px_rgba(94,108,255,0.4)]"></i>
           </div>
-          <div className="glass-card p-4 rounded-2xl rounded-tl-none border-l-4 border-[#bc13fe]">
+          <div className="glass-card p-6 rounded-2xl rounded-tl-none border-l-4 border-[#5E6CFF]">
             <p className="text-white text-sm leading-relaxed">
               Saudações, Invocador! Eu sou o <strong>Coach AI Kings</strong>. 
               Posso analisar sua escalação, prever desempenhos da próxima rodada ou te indicar quem está dominando o meta da Kings Lendas. 
@@ -65,10 +66,10 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
 
         {response && (
           <div className="flex gap-4">
-            <div className="w-12 h-12 bg-[#bc13fe]/10 rounded-full flex items-center justify-center border border-[#bc13fe]/30 shrink-0">
-              <i className="fa-solid fa-robot text-[#bc13fe] text-xl"></i>
+            <div className="w-12 h-12 bg-[#5E6CFF]/10 rounded-full flex items-center justify-center border border-[#5E6CFF]/30 shrink-0">
+              <i className="fa-solid fa-robot text-[#5E6CFF] text-xl shadow-[0_0_15px_rgba(94,108,255,0.4)]"></i>
             </div>
-            <div className="glass-card p-4 rounded-2xl rounded-tl-none border-l-4 border-[#bc13fe]">
+            <div className="glass-card p-6 rounded-2xl rounded-tl-none border-l-4 border-[#5E6CFF]">
               <p className="text-white text-sm leading-relaxed whitespace-pre-wrap">
                 {response}
               </p>
@@ -78,8 +79,8 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
 
         {loading && (
           <div className="flex gap-4 animate-pulse">
-            <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center border border-gray-700 shrink-0"></div>
-            <div className="bg-gray-800/50 p-4 rounded-2xl w-2/3 h-12"></div>
+            <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shrink-0"></div>
+            <div className="bg-white/5 p-4 rounded-2xl w-2/3 h-12"></div>
           </div>
         )}
       </div>
@@ -87,7 +88,7 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
       <div className="relative">
         <input 
           type="text"
-          className="w-full bg-[#0a141e] border-2 border-[#bc13fe]/20 rounded-2xl py-4 pl-6 pr-20 focus:outline-none focus:border-[#bc13fe] transition-all text-white placeholder-gray-500 shadow-xl"
+          className="w-full bg-black/40 border-2 border-white/5 rounded-2xl py-5 pl-8 pr-20 focus:outline-none focus:border-[#5E6CFF]/60 transition-all text-white placeholder-gray-600 shadow-2xl backdrop-blur-xl"
           placeholder="Pergunte ao coach (ex: 'Quem é o melhor mid custo-benefício?')..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -96,7 +97,7 @@ const AICoach: React.FC<AICoachProps> = ({ userTeam }) => {
         <button 
           onClick={askCoach}
           disabled={loading}
-          className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#bc13fe] text-[#010a13] p-3 rounded-xl font-bold hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#bc13fe]/20 disabled:opacity-50"
+          className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#5E6CFF] text-black p-3.5 rounded-xl font-bold hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(94,108,255,0.4)] disabled:opacity-50"
         >
           <i className="fa-solid fa-paper-plane"></i>
         </button>
