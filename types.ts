@@ -39,7 +39,6 @@ export interface UserTeam {
   userName: string;
   name: string;
   avatar: string;
-  rank: string;
   level: number;
   honor: number;
   players: {

@@ -100,11 +100,6 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
               </h1>
 
               <div className="flex items-center gap-8">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">PATENTE ATUAL</span>
-                  <span className="text-xl font-orbitron font-black text-[#5E6CFF]">{userTeam.rank}</span>
-                </div>
-                <div className="w-px h-10 bg-white/5"></div>
                 <button 
                   onClick={onNavigateToMarket}
                   className="group relative px-10 py-4 overflow-hidden border border-[#5E6CFF]/30 hover:border-[#5E6CFF] transition-colors rounded-lg"
@@ -160,7 +155,7 @@ const SquadBuilder: React.FC<SquadBuilderProps> = ({ userTeam, onFire, onNavigat
         
         <div className="flex items-stretch bg-black/40 border border-white/5 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-3xl">
           <PowerModule 
-            label="PATRIMÔNIO" 
+            label="PAITRIMÔNIO" 
             value={formatValue(userTeam.budget)} 
             isCoin={true}
             icon={<img src="https://i.imgur.com/4odZyzF.png" className="w-8 h-8 object-contain invert-[0.1] sepia-[1] saturate-[5] hue-rotate-[210deg]" alt="Coin" />} 

@@ -6,7 +6,6 @@ interface HeaderProps {
   activePage: Page;
   onNavigate: (page: Page) => void;
   userName: string;
-  rank: string;
   avatar: string;
   dbConnected?: boolean;
 }
@@ -39,7 +38,7 @@ const Logo: React.FC = () => {
   );
 };
 
-const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank, avatar, dbConnected = true }) => {
+const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, avatar, dbConnected = true }) => {
   const navItems: { id: Page; label: string }[] = [
     { id: 'dashboard', label: 'Início' },
     { id: 'ranking', label: 'Ligas' },
@@ -104,11 +103,7 @@ const Header: React.FC<HeaderProps> = ({ activePage, onNavigate, userName, rank,
                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#5E6CFF] border-2 border-black rounded-full shadow-lg"></div>
              </div>
              <div className="hidden sm:block text-left">
-                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none mb-1 group-hover:text-[#5E6CFF] transition-colors">{userName}</p>
-                <div className="flex items-center gap-1.5">
-                  <i className="fa-solid fa-medal text-[9px] text-[#5E6CFF]/80"></i>
-                  <span className="text-[10px] text-[#5E6CFF] font-black uppercase tracking-widest">{rank}</span>
-                </div>
+                <p className="text-[12px] font-black text-white uppercase tracking-tight leading-none group-hover:text-[#5E6CFF] transition-colors">{userName}</p>
              </div>
           </div>
         </div>

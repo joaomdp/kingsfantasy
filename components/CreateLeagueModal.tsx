@@ -45,10 +45,10 @@ const CreateLeagueModal: React.FC<CreateLeagueModalProps> = ({ onClose, onSucces
     <div className={`fixed inset-0 z-[2000] flex items-center justify-center p-4 md:p-10 transition-all duration-300 ${isClosing ? 'bg-black/0' : 'bg-black/95 backdrop-blur-xl animate-in fade-in'}`}>
       <div className="absolute inset-0" onClick={() => !isSubmitting && triggerClose()}></div>
       
-      <div className={`relative w-full max-w-2xl bg-[#0B0411] rounded-[40px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col max-h-[90vh] transition-all duration-500 ${isClosing ? 'opacity-0 scale-95 translate-y-12' : 'opacity-100 scale-100 translate-y-0 animate-in zoom-in-95'}`}>
+      <div className={`relative w-full max-w-2xl bg-[#0B0411] rounded-[40px] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,1)] flex flex-col max-h-[90vh] transition-all duration-500 overflow-hidden ${isClosing ? 'opacity-0 scale-95 translate-y-12' : 'opacity-100 scale-100 translate-y-0 animate-in zoom-in-95'}`}>
         
-        {/* Cabeçalho Identico ao Champion Selector */}
-        <div className="p-8 md:p-10 border-b border-white/5 bg-gradient-to-r from-[#5E6CFF]/10 to-transparent shrink-0 flex items-center justify-between">
+        {/* Cabeçalho - Reforçado com cantos arredondados explicitos */}
+        <div className="p-8 md:p-10 border-b border-white/5 bg-gradient-to-r from-[#5E6CFF]/10 to-transparent shrink-0 flex items-center justify-between rounded-t-[40px]">
           <div>
             <h2 className="font-orbitron font-black text-2xl md:text-3xl text-white uppercase tracking-tight mb-2">NOVA LIGA</h2>
             <span className="text-[10px] font-black text-[#5E6CFF] uppercase tracking-widest">SISTEMA DE FUNDAÇÃO DE COMUNIDADES</span>
@@ -60,8 +60,8 @@ const CreateLeagueModal: React.FC<CreateLeagueModalProps> = ({ onClose, onSucces
           )}
         </div>
 
-        {/* Conteúdo com Scroll e Fundo Black/30 */}
-        <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar bg-black/30">
+        {/* Conteúdo com Scroll Invisível (no-scrollbar) */}
+        <div className="flex-1 overflow-y-auto p-8 md:p-10 no-scrollbar bg-black/30">
           <form onSubmit={handleSubmit} className="space-y-10">
             <div className="space-y-4">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] px-1 block">NOME DA LIGA *</label>
@@ -130,9 +130,8 @@ const CreateLeagueModal: React.FC<CreateLeagueModalProps> = ({ onClose, onSucces
               <button 
                 type="submit" 
                 disabled={isSubmitting || !newLeagueName}
-                style={{ clipPath: 'polygon(0% 0%, 100% 0%, 95% 100%, 0% 100%)' }}
-                className={`group relative w-full py-6 font-orbitron font-black text-sm md:text-base uppercase tracking-[0.4em] transition-all duration-500 ${
-                  submitStatus === 'success' ? 'bg-green-600 text-white' : isSubmitting ? 'bg-gray-800 text-gray-600' : 'bg-[#5E6CFF] text-black shadow-[0_20px_50px_rgba(94,108,255,0.4)] hover:scale-[1.01]'
+                className={`group relative w-full py-6 rounded-2xl font-orbitron font-black text-sm md:text-base uppercase tracking-[0.4em] transition-all duration-500 ${
+                  submitStatus === 'success' ? 'bg-green-600 text-white' : isSubmitting ? 'bg-gray-800 text-gray-600' : 'bg-[#5E6CFF] text-black shadow-[0_20px_50px_rgba(94,108,255,0.4)] hover:scale-[1.01] active:scale-95'
                 }`}
               >
                 {submitStatus === 'loading' ? 'PROCESSANDO...' : submitStatus === 'success' ? 'LIGA FUNDADA!' : 'CONFIRMAR FUNDAÇÃO'}

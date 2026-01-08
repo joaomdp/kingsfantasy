@@ -28,7 +28,6 @@ const App: React.FC = () => {
     userName: 'HAKKAI',
     name: 'GOATEAM',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hakkai',
-    rank: 'PLATINA I',
     level: 42,
     honor: 3,
     players: {},
@@ -137,7 +136,7 @@ const App: React.FC = () => {
         />
       )}
 
-      <Header activePage={currentPage} onNavigate={setCurrentPage} userName={userTeam.userName} rank={userTeam.rank} avatar={userTeam.avatar} dbConnected={dbConnected} />
+      <Header activePage={currentPage} onNavigate={setCurrentPage} userName={userTeam.userName} avatar={userTeam.avatar} dbConnected={dbConnected} />
       
       <main className="flex-1 w-full max-w-[1440px] mx-auto px-6 md:px-12 py-12">
         <div key={currentPage} className="page-transition-container">

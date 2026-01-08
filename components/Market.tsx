@@ -128,7 +128,7 @@ const Market: React.FC<MarketProps> = ({ players, userTeam, onHire, onFire, onCl
 
             <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/5">
               <div className="space-y-1">
-                <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block">SALDO</span>
+                <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block">PAITRIMÔNIO</span>
                 <div className="flex items-center gap-2">
                   <PaiCoin size="sm" />
                   <span className="text-2xl font-orbitron font-black text-white">{userTeam.budget.toFixed(1)}</span>
