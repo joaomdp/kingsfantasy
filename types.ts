@@ -41,6 +41,7 @@ export interface UserTeam {
   avatar: string;
   level: number;
   honor: number;
+  favoriteTeam?: string;
   players: {
     [key in Role]?: Player;
   };
