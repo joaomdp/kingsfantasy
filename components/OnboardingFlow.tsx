@@ -1,341 +1,273 @@
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { CHAMPIONS_LIST } from '../constants';
+import { DataService } from '../services/api';
 
 interface OnboardingFlowProps {
   userEmail: string;
-  onComplete: (data: { teamName: string; avatar: string; favoriteTeam: string }) => void;
+  onComplete: (data: { teamName: string; avatar: string; favoriteTeam: string; shield: any }) => void;
 }
 
+const SHIELD_SHAPES = ['fa-shield', 'fa-shield-halved', 'fa-shield-heart', 'fa-certificate', 'fa-clapperboard'];
+const SHIELD_SYMBOLS = ['fa-bolt', 'fa-fire', 'fa-crown', 'fa-skull', 'fa-dragon', 'fa-ghost', 'fa-hand-fist'];
+const COLORS = ['#FFFFFF', '#5E6CFF', '#FFB800', '#00FF94', '#00E0FF', '#FF4655', '#B05EFF', '#FF5EB0'];
+
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }) => {
-  const [step, setStep] = useState<'verify' | 'setup-name' | 'setup-avatar' | 'setup-fav'>('verify');
+  const [step, setStep] = useState<'verify' | 'fav-team' | 'team-name' | 'shield' | 'avatar'>('verify');
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [teamName, setTeamName] = useState('');
+  const [dbTeams, setDbTeams] = useState<{id: string, name: string, logo: string}[]>([]);
+  const [selectedFavTeam, setSelectedFavTeam] = useState<any>(null);
   const [selectedAvatar, setSelectedAvatar] = useState('');
-  const [selectedFavTeam, setSelectedFavTeam] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isCheckingName, setIsCheckingName] = useState(false);
   const [champSearch, setChampSearch] = useState('');
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
+  
+  const [shieldShape, setShieldShape] = useState(SHIELD_SHAPES[0]);
+  const [shieldColor, setShieldColor] = useState('#5E6CFF');
+  const [shieldSymbol, setShieldSymbol] = useState(SHIELD_SYMBOLS[2]);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Mock de nomes indisponíveis
-  const TAKEN_NAMES = ["T1", "PAIN", "LOUD", "LOS GRANDES", "KABUM", "ILHA"];
+  useEffect(() => {
+    const fetchTeams = async () => {
+      setIsLoadingTeams(true);
+      const teams = await DataService.getTeams();
+      setDbTeams(teams);
+      setIsLoadingTeams(false);
+    };
+    fetchTeams();
+  }, []);
 
   const handleCodeChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
     const newCode = [...code];
     newCode[index] = value.substring(value.length - 1);
     setCode(newCode);
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const verifyCode = () => {
-    const fullCode = code.join('');
-    if (fullCode === '123456') {
-      setStep('setup-name');
-      setError(null);
-    } else {
-      setError("CÓDIGO INVÁLIDO. TENTE '123456'");
-    }
-  };
-
-  const checkNameAvailability = () => {
-    setIsCheckingName(true);
-    setTimeout(() => {
-      if (TAKEN_NAMES.includes(teamName.trim().toUpperCase())) {
-        setError("NOME JÁ REIVINDICADO NA ILHA.");
-      } else if (teamName.length < 3) {
-        setError("NOME MUITO CURTO.");
-      } else {
-        setError(null);
-        setStep('setup-avatar');
-      }
-      setIsCheckingName(false);
-    }, 800);
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const filteredChampions = useMemo(() => {
     return CHAMPIONS_LIST
       .filter(id => id.toLowerCase().includes(champSearch.toLowerCase()))
+      .slice(0, 50)
       .map(id => ({
         id,
         url: `https://ddragon.leagueoflegends.com/cdn/14.21.1/img/champion/${id}.png`
       }));
   }, [champSearch]);
 
-  const klgTeams = [
-    { name: 'PAIN GAMING', logo: 'pain-logo.png', color: 'from-red-900/40 to-black', border: 'border-red-500/30' },
-    { name: 'LOUD', logo: 'loud-logo.png', color: 'from-green-900/40 to-black', border: 'border-green-500/30' },
-    { name: 'T1', logo: 't1-logo.png', color: 'from-red-800/40 to-black', border: 'border-red-600/30' },
-    { name: 'GEN GG', logo: 'gen-gg-logo.png', color: 'from-yellow-900/40 to-black', border: 'border-yellow-500/30' },
-    { name: 'KARMINE COSPE', logo: 'karmine-cospe-logo.png', color: 'from-blue-900/40 to-black', border: 'border-blue-500/30' },
-    { name: 'ÉanDG', logo: 'eandg-logo.png', color: 'from-orange-900/40 to-black', border: 'border-orange-500/30' }
-  ];
-
-  const getTeamLogoUrl = (logo: string) => {
-    return `https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/${logo}`;
+  const renderProgress = () => {
+    const steps = ['fav-team', 'team-name', 'shield', 'avatar'];
+    const currentIdx = steps.indexOf(step);
+    return (
+      <div className="w-full flex gap-2 px-10 mb-10">
+        {steps.map((_, i) => (
+          <div key={i} className={`h-1 flex-1 transition-all duration-500 ${i <= currentIdx ? 'bg-[#5E6CFF] shadow-[0_0_10px_rgba(94,108,255,0.5)]' : 'bg-white/10'}`}></div>
+        ))}
+      </div>
+    );
   };
 
-  const selectedChampName = useMemo(() => {
-    const parts = selectedAvatar.split('/');
-    const lastPart = parts[parts.length - 1];
-    return lastPart ? lastPart.split('.')[0].toUpperCase() : '';
-  }, [selectedAvatar]);
+  const handleImageLoad = (id: string) => {
+    setLoadedImages(prev => ({ ...prev, [id]: true }));
+  };
+
+  const fallbackLogo = "https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/logo.png";
 
   return (
-    <div className="fixed inset-0 z-[6000] bg-[#0B0411] flex items-center justify-center p-6 overflow-hidden">
-      <div className="bg-pattern-halftone absolute inset-0 opacity-10"></div>
-      
-      {/* Background Glows */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#5E6CFF]/10 blur-[120px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-purple-600/5 blur-[120px] rounded-full animate-pulse delay-700"></div>
-      </div>
+    <div className="fixed inset-0 z-[6000] bg-[#0B0411] flex flex-col items-center justify-center overflow-hidden font-inter">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#5E6CFF]/5 via-transparent to-transparent pointer-events-none"></div>
 
-      <div className="relative w-full max-w-4xl glass-card rounded-[56px] border border-white/5 shadow-[0_0_150px_rgba(0,0,0,0.9)] overflow-hidden animate-in zoom-in-95 duration-700">
-        
-        {/* Progress Bar Top */}
-        <div className="absolute top-0 left-0 w-full h-1.5 flex gap-1 px-1 pt-1 z-50">
-           {['verify', 'setup-name', 'setup-avatar', 'setup-fav'].map((s, idx) => {
-             const steps = ['verify', 'setup-name', 'setup-avatar', 'setup-fav'];
-             const currentIdx = steps.indexOf(step);
-             const isComplete = idx < currentIdx;
-             const isCurrent = idx === currentIdx;
-             return (
-               <div key={s} className={`flex-1 h-full rounded-full transition-all duration-1000 ${
-                 isComplete ? 'bg-green-500' : isCurrent ? 'bg-[#5E6CFF] shadow-[0_0_10px_#5E6CFF]' : 'bg-white/5'
-               }`}></div>
-             );
-           })}
+      {step === 'verify' && (
+        <div className="w-full max-w-md p-10 space-y-12 animate-in fade-in relative z-10">
+           <div className="text-center space-y-4">
+             <h2 className="text-white font-orbitron font-black text-3xl uppercase tracking-tighter">VERIFICAÇÃO</h2>
+             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">DIGITE O CÓDIGO ENVIADO PARA<br/>{userEmail}</p>
+           </div>
+           <div className="flex justify-center gap-3">
+             {code.map((digit, idx) => (
+               <input key={idx} ref={el => inputRefs.current[idx] = el} type="text" maxLength={1} value={digit} onChange={e => handleCodeChange(idx, e.target.value)} className="w-14 h-20 bg-white/5 border border-white/10 rounded-2xl text-center text-3xl font-orbitron font-black text-white focus:outline-none focus:border-[#5E6CFF] transition-all shadow-inner" />
+             ))}
+           </div>
+           <button onClick={() => setStep('fav-team')} disabled={code.join('').length < 6} className="w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.3)] disabled:opacity-20">CONECTAR NEXUS</button>
         </div>
+      )}
 
-        <div className="flex flex-col h-[650px]">
-          {/* STEP: VERIFY */}
-          {step === 'verify' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-12 animate-in fade-in slide-in-from-bottom-10 duration-700">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-[#5E6CFF]/20 blur-[30px] rounded-full animate-pulse"></div>
-                <div className="relative w-28 h-28 bg-[#5E6CFF]/10 rounded-[3rem] border border-[#5E6CFF]/30 flex items-center justify-center text-[#5E6CFF] shadow-inner">
-                  <i className="fa-solid fa-user-shield text-4xl"></i>
-                </div>
-              </div>
-              
-              <div className="text-center space-y-4">
-                <h2 className="font-orbitron font-black text-4xl text-white uppercase tracking-tighter">VERIFICAÇÃO DA <span className="text-[#5E6CFF]">ILHA</span></h2>
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-relaxed">
-                  ENVIAMOS UM CÓDIGO DE ACESSO PARA<br/>
-                  <span className="text-[#5E6CFF] font-black">{userEmail}</span>
-                </p>
-              </div>
-              
-              <div className="flex justify-center gap-3">
-                {code.map((digit, idx) => (
-                  <input
-                    key={idx}
-                    ref={el => inputRefs.current[idx] = el}
-                    type="text"
-                    maxLength={1}
-                    value={digit}
-                    onChange={e => handleCodeChange(idx, e.target.value)}
-                    onKeyDown={e => handleKeyDown(idx, e)}
-                    className="w-16 h-24 bg-white/5 border border-white/10 rounded-3xl text-center text-4xl font-orbitron font-black text-white focus:outline-none focus:border-[#5E6CFF] focus:bg-[#5E6CFF]/5 transition-all shadow-inner"
-                  />
-                ))}
-              </div>
-
-              {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl animate-in zoom-in-95">
-                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">{error}</p>
-                </div>
-              )}
-
-              <button 
-                onClick={verifyCode}
-                className="w-full max-w-sm py-6 bg-[#5E6CFF] text-black rounded-[2rem] font-orbitron font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.3)]"
-              >
-                AUTENTICAR
-              </button>
+      {step === 'fav-team' && (
+        <div className="w-full max-w-4xl flex flex-col items-center animate-in fade-in relative z-10 h-full pt-10">
+          <div className="w-full text-center mb-8 shrink-0">
+            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">TIME FAVORITO</h3>
+            {renderProgress()}
+            <p className="text-gray-400 text-[14px] font-medium px-4 uppercase tracking-tight">SELECIONE SEU TIME KINGS LENDAS 2026</p>
+          </div>
+          
+          {isLoadingTeams ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#5E6CFF]/20 border-t-[#5E6CFF] rounded-full animate-spin"></div>
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Sincronizando Banco de Dados...</span>
             </div>
-          )}
-
-          {/* STEP: NAME */}
-          {step === 'setup-name' && (
-            <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-12 animate-in fade-in slide-in-from-right-10 duration-700">
-              <div className="text-center space-y-4">
-                <h2 className="font-orbitron font-black text-5xl text-white uppercase tracking-tighter leading-none">NOME DO <span className="text-[#5E6CFF]">TIME</span></h2>
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-relaxed max-w-sm mx-auto">COMO SUA LENDA SERÁ CONHECIDA NO RANKING GLOBAL DA KINGS LENDAS?</p>
-              </div>
-
-              <div className="w-full max-w-lg relative group">
-                <div className="absolute inset-0 bg-[#5E6CFF]/10 blur-[50px] opacity-0 group-focus-within:opacity-100 transition-opacity rounded-full"></div>
-                <input 
-                  type="text" 
-                  placeholder="EX: T1 DA SHOPEE"
-                  value={teamName}
-                  onChange={e => {
-                    setTeamName(e.target.value.toUpperCase());
-                    setError(null);
-                  }}
-                  className={`relative w-full bg-white/5 border rounded-[2.5rem] py-10 px-12 text-center text-3xl font-orbitron font-black text-white focus:outline-none transition-all ${error ? 'border-red-500' : 'border-white/10 focus:border-[#5E6CFF] focus:bg-white/[0.08]'}`}
-                />
-                {isCheckingName && (
-                  <div className="absolute right-10 top-1/2 -translate-y-1/2">
-                    <div className="w-8 h-8 border-4 border-[#5E6CFF] border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
-              </div>
-
-              {error && (
-                <div className="p-5 bg-red-500/10 border border-red-500/20 rounded-3xl">
-                  <p className="text-[11px] font-black text-red-500 uppercase tracking-widest">{error}</p>
-                </div>
-              )}
-
-              <button 
-                onClick={checkNameAvailability}
-                disabled={!teamName || isCheckingName}
-                className="w-full max-w-sm py-6 bg-[#5E6CFF] text-black rounded-[2rem] font-orbitron font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.3)] disabled:opacity-50"
-              >
-                {isCheckingName ? 'VERIFICANDO...' : 'PRÓXIMO PASSO'}
-              </button>
-            </div>
-          )}
-
-          {/* STEP: AVATAR */}
-          {step === 'setup-avatar' && (
-            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-10 duration-700">
-               <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                  <div className="space-y-1">
-                    <h2 className="font-orbitron font-black text-3xl text-white uppercase tracking-tighter">ESCOLHER <span className="text-[#5E6CFF]">AVATAR</span></h2>
-                    <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">SELECIONE SEU CAMPEÃO REPRESENTATIVO</p>
-                  </div>
-                  <div className="relative w-64">
-                    <i className="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
-                    <input 
-                      type="text"
-                      placeholder="FILTRAR..."
-                      value={champSearch}
-                      onChange={e => setChampSearch(e.target.value)}
-                      className="w-full bg-black/40 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-[11px] text-white font-black uppercase focus:outline-none focus:border-[#5E6CFF]/50 transition-all"
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full px-10 overflow-y-auto no-scrollbar pb-40">
+              {dbTeams.map(team => (
+                <button 
+                  key={team.id} 
+                  onClick={() => setSelectedFavTeam(team)}
+                  className={`aspect-square p-8 flex flex-col items-center justify-center border-2 transition-all duration-500 rounded-[2.5rem] relative overflow-hidden ${selectedFavTeam?.id === team.id ? 'border-[#5E6CFF] bg-[#5E6CFF]/10 shadow-[0_0_30px_rgba(94,108,255,0.2)]' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05]'}`}
+                >
+                  <div className={`w-full h-full flex items-center justify-center transition-opacity duration-500`}>
+                    <img 
+                      src={team.logo} 
+                      className={`w-full h-full object-contain transition-all duration-700 ${selectedFavTeam?.id === team.id ? 'scale-110 brightness-110' : 'grayscale opacity-40'}`} 
+                      alt={team.name}
+                      onLoad={() => handleImageLoad(team.id)}
+                      onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }}
                     />
                   </div>
-               </div>
-
-               <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-black/40">
-                  <div className="grid grid-cols-5 md:grid-cols-8 gap-6">
-                    {filteredChampions.map(champ => (
-                      <button 
-                        key={champ.id}
-                        onClick={() => setSelectedAvatar(champ.url)}
-                        className={`group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all duration-500 ${
-                          selectedAvatar === champ.url 
-                          ? 'border-[#5E6CFF] scale-110 shadow-[0_0_30px_rgba(94,108,255,0.5)] z-10' 
-                          : 'border-white/5 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 hover:border-white/30'
-                        }`}
-                      >
-                        <img src={champ.url} className="w-full h-full object-cover transition-transform group-hover:scale-125 duration-700" alt={champ.id} />
-                        {selectedAvatar === champ.url && (
-                          <div className="absolute inset-0 bg-[#5E6CFF]/20 flex items-center justify-center backdrop-blur-[2px]">
-                            <i className="fa-solid fa-check text-[#5E6CFF] text-2xl drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]"></i>
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="p-10 border-t border-white/5 bg-white/[0.02] flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl border-2 border-white/10 overflow-hidden bg-black shadow-2xl">
-                      {selectedAvatar && <img src={selectedAvatar} className="w-full h-full object-cover animate-in zoom-in-50" alt="" />}
-                    </div>
-                    <div>
-                       <span className="text-[10px] font-black text-[#5E6CFF] uppercase tracking-[0.2em] mb-1 block">SELECIONADO:</span>
-                       <h3 className="font-orbitron font-black text-xl text-white uppercase tracking-tighter leading-none">{selectedChampName || 'NENHUM'}</h3>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setStep('setup-fav')}
-                    disabled={!selectedAvatar}
-                    className="px-12 py-5 bg-[#5E6CFF] text-black rounded-2xl font-orbitron font-black text-sm uppercase tracking-widest hover:scale-[1.05] active:scale-95 transition-all shadow-[0_15px_30px_rgba(94,108,255,0.3)] disabled:opacity-50"
-                  >
-                    CONTINUAR
-                  </button>
-               </div>
+                  <span className={`text-[9px] font-black uppercase tracking-tighter mt-4 text-center ${selectedFavTeam?.id === team.id ? 'text-[#5E6CFF]' : 'text-gray-600'}`}>{team.name}</span>
+                </button>
+              ))}
             </div>
           )}
 
-          {/* STEP: FAVORITE TEAM */}
-          {step === 'setup-fav' && (
-            <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-right-10 duration-700">
-               <div className="p-10 text-center space-y-4 bg-white/[0.02] border-b border-white/5">
-                  <h2 className="font-orbitron font-black text-4xl text-white uppercase tracking-tighter">TIME DO <span className="text-[#5E6CFF]">CORAÇÃO</span></h2>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest leading-relaxed">ESCOLHA SEU TIME E ENTRE AUTOMATICAMENTE NA LIGA OFICIAL DELE.</p>
-               </div>
-
-               <div className="flex-1 overflow-y-auto p-12 custom-scrollbar bg-black/40">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {klgTeams.map(t => (
-                      <button
-                        key={t.name}
-                        onClick={() => setSelectedFavTeam(t.name)}
-                        className={`group relative flex flex-col items-center gap-8 p-10 rounded-[3rem] border-2 transition-all duration-500 overflow-hidden ${
-                          selectedFavTeam === t.name 
-                          ? `bg-gradient-to-br ${t.color} border-[#5E6CFF] shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-105` 
-                          : `bg-white/[0.02] border-white/5 hover:border-white/20`
-                        }`}
-                      >
-                        <div className={`w-32 h-32 rounded-[2.5rem] bg-black/40 flex items-center justify-center p-6 border transition-all duration-700 ${selectedFavTeam === t.name ? 'border-[#5E6CFF]/40 shadow-[0_0_30px_rgba(94,108,255,0.2)]' : 'border-white/5 group-hover:scale-110'}`}>
-                          <img 
-                            src={getTeamLogoUrl(t.logo)} 
-                            className="w-full h-full object-contain filter drop-shadow-2xl" 
-                            alt={t.name} 
-                            onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://raw.githubusercontent.com/joaomdp/kingsfantasy/main/times/logo.png';
-                            }}
-                          />
-                        </div>
-                        <span className={`font-orbitron font-black text-sm text-center leading-tight transition-all duration-500 ${selectedFavTeam === t.name ? 'text-white translate-y-[-4px]' : 'text-gray-500 group-hover:text-white'}`}>
-                          {t.name}
-                        </span>
-                        
-                        {selectedFavTeam === t.name && (
-                          <div className="absolute top-6 right-6 w-8 h-8 bg-[#5E6CFF] rounded-full flex items-center justify-center text-black text-xs shadow-lg animate-in zoom-in duration-500">
-                            <i className="fa-solid fa-check"></i>
-                          </div>
-                        )}
-                        
-                        {/* Hover Gradient Overlay */}
-                        <div className={`absolute inset-0 bg-gradient-to-t from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}></div>
-                      </button>
-                    ))}
+          <div className="fixed bottom-0 left-0 w-full p-10 bg-[#0B0411]/90 backdrop-blur-xl border-t border-white/5 z-50">
+            <div className="max-w-md mx-auto space-y-6">
+              {selectedFavTeam && (
+                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 animate-in slide-in-from-bottom-4">
+                  <div className="w-10 h-10 flex items-center justify-center">
+                    <img src={selectedFavTeam.logo} className="w-full h-full object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }} />
                   </div>
-               </div>
+                  <span className="text-white text-[11px] font-black uppercase tracking-widest">VOCÊ É TORCEDOR DA {selectedFavTeam.name}</span>
+                </div>
+              )}
+              <button 
+                disabled={!selectedFavTeam} 
+                onClick={() => setStep('team-name')} 
+                className="w-full py-5 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] hover:scale-[1.02] transition-all disabled:opacity-20"
+              >
+                PRÓXIMO PASSO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-               <div className="p-10 border-t border-white/5 bg-white/[0.02] flex items-center justify-center">
-                  <button 
-                    onClick={() => onComplete({ teamName, avatar: selectedAvatar, favoriteTeam: selectedFavTeam })}
-                    disabled={!selectedFavTeam}
-                    className="w-full max-w-sm py-6 bg-[#5E6CFF] text-black rounded-[2rem] font-orbitron font-black text-sm uppercase tracking-widest hover:scale-[1.05] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.4)] disabled:opacity-50"
-                  >
-                    FINALIZAR ESCALAÇÃO
+      {step === 'team-name' && (
+        <div className="w-full max-w-2xl flex flex-col items-center animate-in slide-in-from-right-10 px-10">
+          <div className="w-full text-center mb-16">
+            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">IDENTIDADE</h3>
+            {renderProgress()}
+            <p className="text-gray-400 text-[14px] font-medium max-w-md mx-auto uppercase tracking-tight">Qual será o nome da sua organização na Ilha das Lendas?</p>
+          </div>
+
+          <div className="w-full max-w-md space-y-6">
+            <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block text-left">NOME DO TIME</label>
+            <input 
+              type="text" 
+              value={teamName}
+              onChange={e => setTeamName(e.target.value.toUpperCase())}
+              className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white font-orbitron font-black text-xl text-center focus:outline-none focus:border-[#5E6CFF] transition-all shadow-inner"
+              placeholder="RANGERNATION"
+              autoFocus
+            />
+          </div>
+
+          <div className="fixed bottom-10 left-0 w-full px-10">
+            <button 
+              onClick={() => setStep('shield')} 
+              disabled={!teamName || teamName.length < 3} 
+              className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] transition-all disabled:opacity-20"
+            >
+              PRÓXIMO
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 'shield' && (
+        <div className="w-full max-w-2xl flex flex-col items-center animate-in slide-in-from-right-10 overflow-y-auto no-scrollbar pb-40">
+          <div className="w-full text-center mb-10">
+            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">BRASÃO</h3>
+            {renderProgress()}
+            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight">Customize sua marca oficial.</p>
+          </div>
+
+          <div className="relative w-48 h-48 mb-12 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#5E6CFF]/20 blur-[60px] rounded-full animate-pulse"></div>
+            <div className="relative transition-all duration-500 drop-shadow-[0_0_20px_rgba(94,108,255,0.5)]" style={{ color: shieldColor }}>
+              <i className={`fa-solid ${shieldShape} text-[10rem]`}></i>
+              <i className={`fa-solid ${shieldSymbol} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-black`}></i>
+            </div>
+          </div>
+
+          <div className="w-full max-w-md space-y-8">
+            <div className="flex gap-4 overflow-x-auto no-scrollbar py-2 px-4">
+              {SHIELD_SHAPES.map(s => (
+                <button key={s} onClick={() => setShieldShape(s)} className={`w-14 h-14 shrink-0 rounded-2xl border border-white/5 flex items-center justify-center transition-all ${shieldShape === s ? 'bg-[#5E6CFF] text-black shadow-[0_0_20px_#5E6CFF]' : 'bg-white/5 text-gray-600 hover:text-white'}`}>
+                  <i className={`fa-solid ${s} text-xl`}></i>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4 overflow-x-auto no-scrollbar py-2 px-4">
+              {COLORS.map(c => (
+                <button key={c} onClick={() => setShieldColor(c)} className={`w-10 h-10 rounded-full shrink-0 border-2 transition-all ${shieldColor === c ? 'border-white scale-125 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: c }}></button>
+              ))}
+            </div>
+            <div className="flex gap-6 overflow-x-auto no-scrollbar py-2 px-4">
+              {SHIELD_SYMBOLS.map(s => (
+                <button key={s} onClick={() => setShieldSymbol(s)} className={`w-14 h-14 shrink-0 rounded-2xl border border-white/5 flex items-center justify-center transition-all ${shieldSymbol === s ? 'bg-[#5E6CFF] text-black shadow-[0_0_20px_#5E6CFF]' : 'bg-white/5 text-gray-600 hover:text-white'}`}>
+                  <i className={`fa-solid ${s} text-xl`}></i>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="fixed bottom-10 left-0 w-full px-10">
+            <button onClick={() => setStep('avatar')} className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] transition-all">PRÓXIMO PASSO</button>
+          </div>
+        </div>
+      )}
+
+      {step === 'avatar' && (
+        <div className="w-full max-w-5xl flex flex-col items-center animate-in fade-in h-full pt-20 relative z-10">
+          <div className="w-full text-center mb-8 px-10 shrink-0">
+            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">REPRESENTANTE</h3>
+            {renderProgress()}
+            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight">Escolha o campeão que será seu rosto na arena.</p>
+          </div>
+
+          <div className="w-full max-w-md px-10 mb-8 shrink-0">
+            <div className="relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-6 top-1/2 -translate-y-1/2 text-gray-700"></i>
+              <input 
+                type="text" 
+                placeholder="BUSCAR LENDA..." 
+                value={champSearch}
+                onChange={e => setChampSearch(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-8 text-[11px] font-black text-white uppercase focus:outline-none focus:border-[#5E6CFF] transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto w-full px-10 no-scrollbar pb-40">
+             <div className="grid grid-cols-4 md:grid-cols-10 gap-4">
+                {filteredChampions.map(champ => (
+                  <button key={champ.id} onClick={() => setSelectedAvatar(champ.url)} className={`aspect-square border-2 transition-all duration-500 rounded-3xl overflow-hidden ${selectedAvatar === champ.url ? 'border-[#5E6CFF] scale-110 shadow-[0_0_30px_rgba(94,108,255,0.4)] z-10' : 'border-white/5 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 hover:border-white/20'}`}>
+                    <img src={champ.url} className="w-full h-full object-cover" alt="" />
                   </button>
-               </div>
+                ))}
+             </div>
+          </div>
+
+          {selectedAvatar && (
+            <div className="fixed bottom-0 left-0 w-full p-10 bg-[#0B0411]/90 backdrop-blur-xl border-t border-white/5 z-50">
+              <button onClick={() => onComplete({ teamName, avatar: selectedAvatar, favoriteTeam: selectedFavTeam?.name, shield: { shape: shieldShape, color: shieldColor, symbol: shieldSymbol } })} className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_60px_rgba(94,108,255,0.4)]">FINALIZAR ORGANIZAÇÃO</button>
             </div>
           )}
         </div>
+      )}
 
-      </div>
     </div>
   );
 };

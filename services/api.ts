@@ -2,7 +2,7 @@
 import { Player, UserTeam, Role } from '../types';
 
 /**
- * CONFIGURAÇÃO DO BACKEND
+ * CONFIGURAÇÃO DO BACKEND KINGS LENDAS 2026
  */
 const SUPABASE_URL = 'https://xfkjdzeclvdyjxjpllbb.supabase.co';
 const SUPABASE_ANON_KEY: string = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhma2pkemVjbHZkeWp4anBsbGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NDUzMDUsImV4cCI6MjA4MzIyMTMwNX0.szByBteMU7eQEj4so-4L4jWWgrhB2f5JU82oludfZfc';
@@ -11,19 +11,11 @@ export const DataService = {
   SUPABASE_URL,
   
   getActiveKey() {
-    if (SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 20) return SUPABASE_ANON_KEY;
-    const localKey = localStorage.getItem('supabase_anon_key');
-    if (localKey) return localKey;
-    return process.env.SUPABASE_ANON_KEY || '';
-  },
-
-  // Retorna a URL base do site atual (seja localhost ou preview)
-  getRedirectUrl() {
-    return window.location.origin;
+    return SUPABASE_ANON_KEY;
   },
 
   getStorageUrl(bucket: 'players' | 'teams' | 'avatars', path: string): string {
-    if (!path || !SUPABASE_URL) return '';
+    if (!path) return '';
     if (path.startsWith('http')) return path;
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
     return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${cleanPath}`;
@@ -31,8 +23,6 @@ export const DataService = {
 
   async checkConnection(): Promise<{ok: boolean, error?: string}> {
     const key = this.getActiveKey();
-    if (!key) return { ok: false, error: 'Chave não configurada' };
-
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/players?select=id&limit=1`, {
         headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
@@ -43,10 +33,27 @@ export const DataService = {
     }
   },
 
+  async getTeams(): Promise<{id: string, name: string, logo: string}[]> {
+    const key = this.getActiveKey();
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/teams?select=*`, {
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return data.map((t: any) => ({
+        id: t.id.toString(),
+        name: t.name,
+        logo: this.getStorageUrl('teams', t.logo_url)
+      }));
+    } catch (e) {
+      console.error("Erro ao buscar times:", e);
+      return [];
+    }
+  },
+
   async getPlayers(): Promise<Player[]> {
     const key = this.getActiveKey();
-    if (!key) return [];
-
     try {
       const response = await fetch(`${SUPABASE_URL}/rest/v1/players?select=*,teams(*)`, {
         headers: {
@@ -77,7 +84,7 @@ export const DataService = {
           avgPoints: Number(item.avg_points),
           kda: item.kda,
           image: this.getStorageUrl('players', item.image),
-          team: teamData.name,
+          team: teamData.name || 'Sem Time',
           teamLogo: this.getStorageUrl('teams', teamData.logo_url)
         };
       });
@@ -88,7 +95,6 @@ export const DataService = {
 
   async saveUserTeam(team: UserTeam): Promise<boolean> {
     const key = this.getActiveKey();
-    if (!key) return false;
     try {
       const response = await fetch(`${SUPABASE_URL}/rest/v1/user_teams`, {
         method: 'POST',
@@ -103,7 +109,8 @@ export const DataService = {
           team_name: team.name,
           budget: team.budget,
           total_points: team.totalPoints,
-          lineup: team.players
+          lineup: team.players,
+          favorite_team: team.favoriteTeam
         })
       });
       return response.ok;

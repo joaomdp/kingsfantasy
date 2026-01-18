@@ -27,6 +27,12 @@ export interface Player {
   selectedChampion?: Champion;
 }
 
+export interface UserShield {
+  shape: string;
+  color: string;
+  symbol: string;
+}
+
 export interface UserPreferences {
   publicProfile: boolean;
   marketNotifications: boolean;
@@ -42,6 +48,7 @@ export interface UserTeam {
   level: number;
   honor: number;
   favoriteTeam?: string;
+  shield?: UserShield;
   players: {
     [key in Role]?: Player;
   };
