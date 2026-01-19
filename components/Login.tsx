@@ -217,18 +217,27 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </div>
               )}
 
-              <div className="flex items-center gap-3 py-2">
-                <label className="relative flex items-center cursor-pointer group">
+              <div className="pt-2">
+                <label className="inline-flex items-center gap-3 p-1 cursor-pointer group rounded-lg transition-all hover:bg-white/5">
                   <input 
                     type="checkbox" 
                     checked={rememberMe} 
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="peer sr-only" 
+                    className="sr-only" 
                   />
-                  <div className="w-5 h-5 bg-white/5 border border-white/10 rounded-md peer-checked:bg-[#5E6CFF] peer-checked:border-[#5E6CFF] transition-all flex items-center justify-center">
-                    <i className="fa-solid fa-check text-black text-[10px] opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+                  <div className={`w-5 h-5 bg-white/5 border rounded-md transition-all flex items-center justify-center shrink-0 ${rememberMe ? 'border-[#5E6CFF]' : 'border-white/10'}`}>
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      viewBox="0 0 20 20" 
+                      fill="currentColor" 
+                      className={`w-3.5 h-3.5 text-[#5E6CFF] transition-all duration-200 ${rememberMe ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
+                    >
+                      <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  <span className="ml-3 text-[10px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">Lembrar de mim</span>
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-hover:text-white transition-colors">
+                    Lembrar de mim
+                  </span>
                 </label>
               </div>
               

@@ -12,14 +12,24 @@ const SHIELD_SHAPES = ['fa-shield', 'fa-shield-halved', 'fa-shield-heart', 'fa-c
 const SHIELD_SYMBOLS = ['fa-bolt', 'fa-fire', 'fa-crown', 'fa-skull', 'fa-dragon', 'fa-ghost', 'fa-hand-fist'];
 const COLORS = ['#FFFFFF', '#5E6CFF', '#FFB800', '#00FF94', '#00E0FF', '#FF4655', '#B05EFF', '#FF5EB0'];
 
+// Lista de nomes reservados (Times oficiais)
+const RESERVED_NAMES = ["T1", "LOUD", "PAIN", "FURIA", "FLUXO", "RED CANIDS", "KABUM", "INTZ", "LOS GRANDES", "ITAFANTASY", "LIBERTY", "VIVO KEYD", "KEYD"];
+
 const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }) => {
-  const [step, setStep] = useState<'verify' | 'fav-team' | 'team-name' | 'shield' | 'avatar'>('verify');
+  const [step, setStep] = useState<'verify' | 'fav-team' | 'team-name' | 'avatar'>('verify');
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [teamName, setTeamName] = useState('');
   const [dbTeams, setDbTeams] = useState<{id: string, name: string, logo: string}[]>([]);
   const [selectedFavTeam, setSelectedFavTeam] = useState<any>(null);
   const [selectedAvatar, setSelectedAvatar] = useState('');
+  
+  // Validation States
+  const [nameError, setNameError] = useState('');
+  const [isCheckingName, setIsCheckingName] = useState(false);
+
+  // Search States
   const [champSearch, setChampSearch] = useState('');
+
   const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   
@@ -28,6 +38,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
   const [shieldSymbol, setShieldSymbol] = useState(SHIELD_SYMBOLS[2]);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const teamButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -35,9 +46,27 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
       const teams = await DataService.getTeams();
       setDbTeams(teams);
       setIsLoadingTeams(false);
+
+      // Preload images immediately
+      teams.forEach(team => {
+        const img = new Image();
+        img.src = team.logo;
+      });
     };
     fetchTeams();
   }, []);
+
+  useEffect(() => {
+    if (selectedFavTeam?.id && teamButtonRefs.current[selectedFavTeam.id]) {
+      const buttonElement = teamButtonRefs.current[selectedFavTeam.id];
+      setTimeout(() => {
+        buttonElement?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 150);
+    }
+  }, [selectedFavTeam]);
 
   const handleCodeChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -47,18 +76,43 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
     if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
+  const handleTeamNameSubmit = async () => {
+    const normalizedName = teamName.toUpperCase().trim();
+    setNameError('');
+    
+    if (normalizedName.length < 3) {
+      setNameError('O NOME DEVE TER NO MÍNIMO 3 LETRAS');
+      return;
+    }
+
+    if (RESERVED_NAMES.includes(normalizedName)) {
+      setNameError('ESTE NOME É RESERVADO PARA TIMES OFICIAIS');
+      return;
+    }
+
+    setIsCheckingName(true);
+    const exists = await DataService.checkTeamNameExists(normalizedName);
+    setIsCheckingName(false);
+
+    if (exists) {
+      setNameError('ESTE NOME JÁ ESTÁ SENDO USADO');
+      return;
+    }
+
+    setStep('avatar');
+  };
+
   const filteredChampions = useMemo(() => {
     return CHAMPIONS_LIST
       .filter(id => id.toLowerCase().includes(champSearch.toLowerCase()))
-      .slice(0, 50)
       .map(id => ({
         id,
-        url: `https://ddragon.leagueoflegends.com/cdn/14.21.1/img/champion/${id}.png`
+        url: `https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/${id}.png`
       }));
   }, [champSearch]);
 
   const renderProgress = () => {
-    const steps = ['fav-team', 'team-name', 'shield', 'avatar'];
+    const steps = ['fav-team', 'team-name', 'avatar'];
     const currentIdx = steps.indexOf(step);
     return (
       <div className="w-full flex gap-2 px-10 mb-10">
@@ -91,16 +145,16 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
                <input key={idx} ref={el => inputRefs.current[idx] = el} type="text" maxLength={1} value={digit} onChange={e => handleCodeChange(idx, e.target.value)} className="w-14 h-20 bg-white/5 border border-white/10 rounded-2xl text-center text-3xl font-orbitron font-black text-white focus:outline-none focus:border-[#5E6CFF] transition-all shadow-inner" />
              ))}
            </div>
-           <button onClick={() => setStep('fav-team')} disabled={code.join('').length < 6} className="w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.3)] disabled:opacity-20">CONECTAR NEXUS</button>
+           <button onClick={() => setStep('fav-team')} disabled={code.join('').length < 6} className="w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_50px_rgba(94,108,255,0.3)] disabled:opacity-20">CONECTAR</button>
         </div>
       )}
 
       {step === 'fav-team' && (
-        <div className="w-full max-w-4xl flex flex-col items-center animate-in fade-in relative z-10 h-full pt-10">
-          <div className="w-full text-center mb-8 shrink-0">
-            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">TIME FAVORITO</h3>
+        <div className="w-full max-w-6xl flex flex-col items-center animate-in fade-in relative z-10 h-full pt-10">
+          <div className="w-full max-w-4xl text-center mb-4 shrink-0 px-4">
+            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-8">TIME FAVORITO</h3>
             {renderProgress()}
-            <p className="text-gray-400 text-[14px] font-medium px-4 uppercase tracking-tight">SELECIONE SEU TIME KINGS LENDAS 2026</p>
+            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight mb-8">PARA QUEM VOCÊ TORCE?</p>
           </div>
           
           {isLoadingTeams ? (
@@ -109,44 +163,62 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
               <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Sincronizando Banco de Dados...</span>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full px-10 overflow-y-auto no-scrollbar pb-40">
-              {dbTeams.map(team => (
-                <button 
-                  key={team.id} 
-                  onClick={() => setSelectedFavTeam(team)}
-                  className={`aspect-square p-8 flex flex-col items-center justify-center border-2 transition-all duration-500 rounded-[2.5rem] relative overflow-hidden ${selectedFavTeam?.id === team.id ? 'border-[#5E6CFF] bg-[#5E6CFF]/10 shadow-[0_0_30px_rgba(94,108,255,0.2)]' : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.05]'}`}
-                >
-                  <div className={`w-full h-full flex items-center justify-center transition-opacity duration-500`}>
-                    <img 
-                      src={team.logo} 
-                      className={`w-full h-full object-contain transition-all duration-700 ${selectedFavTeam?.id === team.id ? 'scale-110 brightness-110' : 'grayscale opacity-40'}`} 
-                      alt={team.name}
-                      onLoad={() => handleImageLoad(team.id)}
-                      onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }}
-                    />
-                  </div>
-                  <span className={`text-[9px] font-black uppercase tracking-tighter mt-4 text-center ${selectedFavTeam?.id === team.id ? 'text-[#5E6CFF]' : 'text-gray-600'}`}>{team.name}</span>
-                </button>
-              ))}
+            <div className="w-full flex-1 overflow-y-auto no-scrollbar px-6 pb-48">
+               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-6 gap-y-12 max-w-5xl mx-auto pt-6">
+                {dbTeams.map(team => (
+                  <button 
+                    key={team.id}
+                    ref={el => (teamButtonRefs.current[team.id] = el)}
+                    onClick={() => setSelectedFavTeam(team)}
+                    className="group relative flex flex-col items-center justify-start gap-4 transition-all duration-300 outline-none"
+                  >
+                    <div className={`relative w-20 h-20 md:w-24 md:h-24 transition-all duration-500 ease-out ${
+                      selectedFavTeam?.id === team.id 
+                        ? 'scale-110 z-10' 
+                        : 'scale-100 opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105'
+                    }`}>
+                      <img 
+                        src={team.logo} 
+                        className={`w-full h-full object-contain transition-all duration-500 ${
+                          selectedFavTeam?.id === team.id 
+                           ? 'drop-shadow-[0_0_30px_rgba(94,108,255,0.8)]' 
+                           : 'drop-shadow-none'
+                        }`}
+                        alt={team.name}
+                        loading="eager"
+                        onLoad={() => handleImageLoad(team.id)}
+                        onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-black uppercase tracking-wider text-center transition-all duration-300 line-clamp-1 max-w-full px-1 ${
+                       selectedFavTeam?.id === team.id 
+                       ? 'text-white text-shadow-glow' 
+                       : 'text-gray-600 group-hover:text-gray-400'
+                    }`}>
+                      {team.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="fixed bottom-0 left-0 w-full p-10 bg-[#0B0411]/90 backdrop-blur-xl border-t border-white/5 z-50">
-            <div className="max-w-md mx-auto space-y-6">
+          <div className="fixed bottom-0 left-0 w-full p-8 md:p-10 bg-gradient-to-t from-[#0B0411] via-[#0B0411]/95 to-transparent z-50 pointer-events-none">
+            <div className="max-w-md mx-auto pointer-events-auto">
               {selectedFavTeam && (
-                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 animate-in slide-in-from-bottom-4">
-                  <div className="w-10 h-10 flex items-center justify-center">
-                    <img src={selectedFavTeam.logo} className="w-full h-full object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }} />
+                <div className="flex items-center gap-4 bg-[#5E6CFF]/10 p-3 rounded-2xl border border-[#5E6CFF]/20 animate-in slide-in-from-bottom-4 mb-4 backdrop-blur-md">
+                  <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                    <img src={selectedFavTeam.logo} className="w-full h-full object-contain drop-shadow-[0_0_5px_#5E6CFF]" alt="" onError={(e) => { (e.target as HTMLImageElement).src = fallbackLogo; }} />
                   </div>
-                  <span className="text-white text-[11px] font-black uppercase tracking-widest">VOCÊ É TORCEDOR DA {selectedFavTeam.name}</span>
+                  <span className="text-white text-[10px] font-black uppercase tracking-widest truncate">TORCEDOR DA <span className="text-[#5E6CFF]">{selectedFavTeam.name}</span></span>
                 </div>
               )}
               <button 
                 disabled={!selectedFavTeam} 
                 onClick={() => setStep('team-name')} 
-                className="w-full py-5 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] hover:scale-[1.02] transition-all disabled:opacity-20"
+                className="w-full py-5 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_50px_rgba(94,108,255,0.25)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-20 disabled:grayscale hover:shadow-[0_20px_60px_rgba(94,108,255,0.4)]"
               >
-                PRÓXIMO PASSO
+                CONFIRMAR ESCOLHA
               </button>
             </div>
           </div>
@@ -158,73 +230,44 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
           <div className="w-full text-center mb-16">
             <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">IDENTIDADE</h3>
             {renderProgress()}
-            <p className="text-gray-400 text-[14px] font-medium max-w-md mx-auto uppercase tracking-tight">Qual será o nome da sua organização na Ilha das Lendas?</p>
+            <p className="text-gray-400 text-[14px] font-medium max-w-md mx-auto uppercase tracking-tight">QUAL SERÁ O NOME DO SEU TIME?</p>
           </div>
 
           <div className="w-full max-w-md space-y-6">
             <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block text-left">NOME DO TIME</label>
-            <input 
-              type="text" 
-              value={teamName}
-              onChange={e => setTeamName(e.target.value.toUpperCase())}
-              className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-6 text-white font-orbitron font-black text-xl text-center focus:outline-none focus:border-[#5E6CFF] transition-all shadow-inner"
-              placeholder="RANGERNATION"
-              autoFocus
-            />
+            <div className="space-y-2">
+              <input 
+                type="text" 
+                value={teamName}
+                onChange={e => {
+                  setTeamName(e.target.value.toUpperCase());
+                  setNameError('');
+                }}
+                className={`w-full bg-white/5 border rounded-[2rem] p-6 text-white font-orbitron font-black text-xl text-center focus:outline-none transition-all shadow-inner ${nameError ? 'border-red-500' : 'border-white/10 focus:border-[#5E6CFF]'}`}
+                placeholder="RANGERNATION"
+                autoFocus
+              />
+              {nameError && (
+                <p className="text-[10px] font-black text-red-500 text-center uppercase tracking-wider animate-in fade-in">{nameError}</p>
+              )}
+            </div>
           </div>
 
           <div className="fixed bottom-10 left-0 w-full px-10">
             <button 
-              onClick={() => setStep('shield')} 
-              disabled={!teamName || teamName.length < 3} 
-              className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] transition-all disabled:opacity-20"
+              onClick={handleTeamNameSubmit} 
+              disabled={!teamName || teamName.length < 3 || isCheckingName} 
+              className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] transition-all disabled:opacity-20 flex items-center justify-center gap-3"
             >
-              PRÓXIMO
+              {isCheckingName ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></span>
+                  VERIFICANDO...
+                </>
+              ) : (
+                'PRÓXIMO'
+              )}
             </button>
-          </div>
-        </div>
-      )}
-
-      {step === 'shield' && (
-        <div className="w-full max-w-2xl flex flex-col items-center animate-in slide-in-from-right-10 overflow-y-auto no-scrollbar pb-40">
-          <div className="w-full text-center mb-10">
-            <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">BRASÃO</h3>
-            {renderProgress()}
-            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight">Customize sua marca oficial.</p>
-          </div>
-
-          <div className="relative w-48 h-48 mb-12 flex items-center justify-center">
-            <div className="absolute inset-0 bg-[#5E6CFF]/20 blur-[60px] rounded-full animate-pulse"></div>
-            <div className="relative transition-all duration-500 drop-shadow-[0_0_20px_rgba(94,108,255,0.5)]" style={{ color: shieldColor }}>
-              <i className={`fa-solid ${shieldShape} text-[10rem]`}></i>
-              <i className={`fa-solid ${shieldSymbol} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-4xl text-black`}></i>
-            </div>
-          </div>
-
-          <div className="w-full max-w-md space-y-8">
-            <div className="flex gap-4 overflow-x-auto no-scrollbar py-2 px-4">
-              {SHIELD_SHAPES.map(s => (
-                <button key={s} onClick={() => setShieldShape(s)} className={`w-14 h-14 shrink-0 rounded-2xl border border-white/5 flex items-center justify-center transition-all ${shieldShape === s ? 'bg-[#5E6CFF] text-black shadow-[0_0_20px_#5E6CFF]' : 'bg-white/5 text-gray-600 hover:text-white'}`}>
-                  <i className={`fa-solid ${s} text-xl`}></i>
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar py-2 px-4">
-              {COLORS.map(c => (
-                <button key={c} onClick={() => setShieldColor(c)} className={`w-10 h-10 rounded-full shrink-0 border-2 transition-all ${shieldColor === c ? 'border-white scale-125 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: c }}></button>
-              ))}
-            </div>
-            <div className="flex gap-6 overflow-x-auto no-scrollbar py-2 px-4">
-              {SHIELD_SYMBOLS.map(s => (
-                <button key={s} onClick={() => setShieldSymbol(s)} className={`w-14 h-14 shrink-0 rounded-2xl border border-white/5 flex items-center justify-center transition-all ${shieldSymbol === s ? 'bg-[#5E6CFF] text-black shadow-[0_0_20px_#5E6CFF]' : 'bg-white/5 text-gray-600 hover:text-white'}`}>
-                  <i className={`fa-solid ${s} text-xl`}></i>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="fixed bottom-10 left-0 w-full px-10">
-            <button onClick={() => setStep('avatar')} className="max-w-md mx-auto block w-full py-6 bg-[#5E6CFF] text-black font-black text-sm uppercase tracking-widest rounded-2xl shadow-[0_20px_40px_rgba(94,108,255,0.3)] transition-all">PRÓXIMO PASSO</button>
           </div>
         </div>
       )}
@@ -234,7 +277,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ userEmail, onComplete }
           <div className="w-full text-center mb-8 px-10 shrink-0">
             <h3 className="text-white text-[12px] font-bold uppercase tracking-[0.4em] mb-10">REPRESENTANTE</h3>
             {renderProgress()}
-            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight">Escolha o campeão que será seu rosto na arena.</p>
+            <p className="text-gray-400 text-[14px] font-medium uppercase tracking-tight">ESCOLHA O CAMPEÃO QUE TE REPRESENTA</p>
           </div>
 
           <div className="w-full max-w-md px-10 mb-8 shrink-0">

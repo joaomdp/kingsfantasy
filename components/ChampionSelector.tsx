@@ -35,7 +35,7 @@ const ChampionSelector: React.FC<ChampionSelectorProps> = ({ playerName, onSelec
       .map(id => ({
         id,
         name: id === 'MonkeyKing' ? 'Wukong' : id,
-        image: `https://ddragon.leagueoflegends.com/cdn/14.21.1/img/champion/${id}.png`
+        image: `https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/${id}.png`
       }));
   }, [searchTerm, selectedRole]);
 

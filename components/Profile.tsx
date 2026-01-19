@@ -58,7 +58,7 @@ const Profile: React.FC<ProfileProps> = ({ userTeam, onUpdate, onLogout }) => {
       .map(id => ({
         id,
         name: id === 'MonkeyKing' ? 'Wukong' : id,
-        url: `https://ddragon.leagueoflegends.com/cdn/14.21.1/img/champion/${id}.png`
+        url: `https://ddragon.leagueoflegends.com/cdn/15.1.1/img/champion/${id}.png`
       }));
   }, [champSearch]);
 

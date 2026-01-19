@@ -33,6 +33,26 @@ export const DataService = {
     }
   },
 
+  async checkTeamNameExists(name: string): Promise<boolean> {
+    const key = this.getActiveKey();
+    try {
+      // Verifica na tabela user_teams se existe algum time com este nome (case insensitive se possível, ou exato)
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/user_teams?team_name=eq.${encodeURIComponent(name)}&select=id`, {
+        headers: { 
+          'apikey': key, 
+          'Authorization': `Bearer ${key}`
+        }
+      });
+      
+      if (!response.ok) return false;
+      const data = await response.json();
+      return data.length > 0;
+    } catch (error) {
+      console.error("Erro ao verificar nome do time:", error);
+      return false;
+    }
+  },
+
   async getTeams(): Promise<{id: string, name: string, logo: string}[]> {
     const key = this.getActiveKey();
     try {
@@ -110,7 +130,8 @@ export const DataService = {
           budget: team.budget,
           total_points: team.totalPoints,
           lineup: team.players,
-          favorite_team: team.favoriteTeam
+          favorite_team: team.favoriteTeam,
+          avatar: team.avatar // Garante que o avatar seja salvo também
         })
       });
       return response.ok;

@@ -113,18 +113,26 @@ const App: React.FC = () => {
     setNeedsOnboarding(true); // Sempre inicia onboarding após login novo por e-mail
   };
 
-  const handleOnboardingComplete = (data: { teamName: string; avatar: string; favoriteTeam: string }) => {
+  const handleOnboardingComplete = async (data: { teamName: string; avatar: string; favoriteTeam: string }) => {
     const session = AuthService.getSession();
     if (session?.user?.id) {
       localStorage.setItem(`setup_complete_${session.user.id}`, 'true');
     }
     
-    setUserTeam(prev => ({
-      ...prev,
+    // Atualiza o estado local
+    const updatedTeam = {
+      ...userTeam,
       name: data.teamName,
       avatar: data.avatar,
       favoriteTeam: data.favoriteTeam 
-    } as any));
+    };
+
+    setUserTeam(updatedTeam as any);
+
+    // Salva imediatamente no banco de dados para garantir persistência
+    if (session?.user?.id) {
+       await DataService.saveUserTeam({ ...updatedTeam, userId: session.user.id } as any);
+    }
 
     setNeedsOnboarding(false);
     setCurrentPage('dashboard');
